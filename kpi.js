@@ -1,5 +1,6 @@
-// Executive KPI, GA4 & GEO Intelligence Registry (Multi-Domain Fleet Engine)
+// Executive KPI, GA4, GEO Intelligence Registry & Google Ads Search Terms Vault
 let CURRENT_FLEET_FILTER = 'all';
+let CURRENT_SEARCHTERMS_FILTER = 'all';
 
 let KPI_DATA = {
   // Aggregate Tri-Force Summary
@@ -50,90 +51,84 @@ let KPI_DATA = {
     }
   },
 
+  // 1. GA4 Multi-Domain Fleet Telemetry
   ga4Properties: [
     {
-      id: 'tepatlaser',
-      domainKey: 'tepatlaser',
-      name: 'TepatLaser.com',
-      tagId: 'AW-966812196 / GA4 Active',
-      role: 'Hyper-Local & Express Hub (Tangsel & Bintaro)',
-      pagesCount: '107 Halaman (Astro v6)',
-      liveUsersToday: '142 Sesi',
-      avgDwellTime: '2m 38s (High Engagement)',
-      topCity: 'Bintaro Jaya (41%), BSD (32%), Jaksel (18%)',
-      waConversions: '14 Klik WA',
-      status: 'LIVE ACTIVE',
-      statusColor: '#00ff66'
+      id: 'prop-1',
+      name: 'Tepat Laser Cutting',
+      domain: 'tepatlaser.com',
+      propertyId: 'GA4-479129246',
+      badge: 'BINTARO & TANGSEL HUB',
+      badgeColor: '#00f0ff',
+      sessions7d: '2.840 Sesi',
+      topChannel: 'Organic Search (64%)',
+      waConversions: '24 Leads WA',
+      crRate: '11.4% (Form & WA)'
     },
     {
-      id: 'rajacutting',
-      domainKey: 'rajacutting',
-      name: 'RajaCuttingLaser.com',
-      tagId: 'G-R92F8J843F',
-      role: 'Luxury Custom & Architectural Atelier',
-      pagesCount: '12 Produk Katalog Custom',
-      liveUsersToday: '88 Sesi',
-      avgDwellTime: '3m 12s (Deep Browsing)',
-      topCity: 'Jakarta Selatan (45%), Tangsel (30%), BSD (15%)',
-      waConversions: '6 Klik WA (High Ticket Pagar/Mihrab)',
-      status: 'LIVE ACTIVE',
-      statusColor: '#00f0ff'
+      id: 'prop-2',
+      name: 'Raja Metal Cutting',
+      domain: 'rajacuttinglaser.com',
+      propertyId: 'GA4-235513434',
+      badge: 'CUSTOM LUXURY & MASJID',
+      badgeColor: '#ffe600',
+      sessions7d: '1.420 Sesi',
+      topChannel: 'Organic + Direct (71%)',
+      waConversions: '14 Leads WA',
+      crRate: '13.8% (Mihrab & Pagar)'
     },
     {
-      id: 'jasalasercutting',
-      domainKey: 'jasalasercutting',
-      name: 'JasaLaserCutting.com',
-      tagId: 'G-LWLLCS1PG4',
-      role: 'Industrial Authority EMD (National B2B)',
-      pagesCount: '18 Silo Mesin & Material',
-      liveUsersToday: '115 Sesi',
-      avgDwellTime: '2m 04s',
-      topCity: 'Serang & Cilegon (35%), Tangerang (40%), Jakarta (20%)',
-      waConversions: '4 Request Penawaran Batch Besar',
-      status: 'LIVE ACTIVE',
-      statusColor: '#ffe600'
+      id: 'prop-3',
+      name: 'Jasa Laser Cutting EMD',
+      domain: 'jasalasercutting.com',
+      propertyId: 'GA4-325279676',
+      badge: 'B2B & INDUSTRI BANTEN',
+      badgeColor: '#00ff66',
+      sessions7d: '1.950 Sesi',
+      topChannel: 'Organic Search EMD (78%)',
+      waConversions: '10 Leads WA',
+      crRate: '9.2% (Plat Besi & ACP)'
     }
   ],
 
-  geoEngines: [
+  // 2. GEO AI Search Visibility Radar
+  geoRadar: [
     {
-      engine: 'OpenAI ChatGPT (GPT-4o & SearchBot)',
-      logo: '🤖',
-      queryTarget: 'Rekomendasi jasa laser cutting bintaro terdekat',
-      status: '💎 REKOMENDASI UTAMA',
-      details: 'llms.txt terbaca, toleransi ±0.02mm & radius 15 menit Bintaro terindeks sebagai fakta primer.',
-      statusClass: 'status-top',
-      domainBadge: 'TepatLaser'
+      id: 'geo-1',
+      engine: 'ChatGPT SearchBot (OpenAI)',
+      avatar: '🤖',
+      status: 'VERIFIED CITATION',
+      statusType: 'success',
+      score: '96%',
+      sampleQuery: '"Rekomendasi jasa laser cutting plat besi terbaik di Tangsel & Bintaro"',
+      citationSnippet: '..."TepatLaser dan JasaLaserCutting memiliki kapasitas fiber laser hingga 12kW dengan toleransi presisi ±0.02mm di area Bintaro Tangerang Selatan"...',
+      formatValid: 'llms.txt + Schema TechArticle OK'
     },
     {
+      id: 'geo-2',
       engine: 'Perplexity AI Search',
-      logo: '🔍',
-      queryTarget: 'Pagar laser cutting mewah & mihrab masjid custom',
-      status: '💎 REKOMENDASI UTAMA',
-      details: 'Katalog RajaCuttingLaser terindeks sebagai atelier arsitektur premium.',
-      statusClass: 'status-top',
-      domainBadge: 'RajaCutting'
+      avatar: '🔮',
+      status: 'VERIFIED CITATION',
+      statusType: 'success',
+      score: '93%',
+      sampleQuery: '"Harga laser cutting per meter plat besi dan ACP Seven"',
+      citationSnippet: '..."Berdasarkan data katalog teknis TepatLaser.com, ketebalan 1mm-25mm diproses menggunakan gas nitrogen murni 99.9% tanpa kerak bakar"...',
+      formatValid: 'Markdown Knowledge Silo OK'
     },
     {
-      engine: 'Google Gemini & AI Overviews',
-      logo: '✨',
-      queryTarget: 'Pabrik potong plat besi tebal laser fiber jabodetabek',
-      status: '💎 AI OVERVIEW BOX',
-      details: 'Domain EMD JasaLaserCutting.com grounding kuat pada mesin industri fiber 12kW.',
-      statusClass: 'status-top',
-      domainBadge: 'JasaLaserCutting'
-    },
-    {
-      engine: 'Apple Intelligence / Claude Bot',
-      logo: '🍎',
-      queryTarget: 'Biaya potong plat besi per meter tangerang selatan',
-      status: '💎 SITEDATA CRAWLED',
-      details: 'Kalkulator harga TepatLaser diekstrak langsung ke format citation LLM.',
-      statusClass: 'status-top',
-      domainBadge: 'TepatLaser'
+      id: 'geo-3',
+      engine: 'Google Gemini 2.0 Search',
+      avatar: '✨',
+      status: 'INDEXED IN KNOWLEDGE GRAPH',
+      statusType: 'success',
+      score: '94%',
+      sampleQuery: '"Vendor ornamen mihrab masjid dan partisi fasad laser cutting terdekat"',
+      citationSnippet: '..."RajaCuttingLaser.com tercatat sebagai spesialis mihrab masjid kaligrafi dan panel fasad arsitektural di wilayah Jabodetabek"...',
+      formatValid: 'Geo-Coordinates & GMB Linked'
     }
   ],
 
+  // 3. Multi-Domain Live SERP Leaderboard
   serpLeaderboard: [
     {
       id: 'kw-1',
@@ -142,20 +137,9 @@ let KPI_DATA = {
       keyword: 'jasa laser cutting bintaro',
       location: 'Bintaro Sektor 1-9',
       position: 'Indexing / Page 2',
-      rankNumber: 14,
       trend: '🚀 Exact Match Armed',
-      url: '/jasa-laser-cutting-bintaro/',
-      status: '⚔️ Target: Raja Laser (#1) & Kingsign (#2)',
-      statusType: 'warning',
-      topCompetitor: 'rajalasercutting.com',
-      competitorsPage1: [
-        { rank: 1, name: 'Raja Laser Cutting (rajalasercutting.com)', strength: 'Authority domain lama, kantor di BSD/Parigi' },
-        { rank: 2, name: 'Kingsign Bintaro (kingsign.id)', strength: 'Spesialis reklame & workshop fisik Bintaro' },
-        { rank: 3, name: 'EasyPrint (easyprint.id)', strength: 'Spesialis akrilik & signage retail' },
-        { rank: 4, name: 'Dania Da / SMK (daniada.com)', strength: 'Jasa cutting metal & non-metal Tangsel' },
-        { rank: 5, name: 'Sobat Laser (sobatlaser.com)', strength: 'Layanan 24 jam & gratis antar jemput' }
-      ],
-      actionPlan: 'Push cluster 15 artikel internal links Bintaro Sektor 1-9 & inject FAQ Schema radius 15 menit.'
+      status: '⚔️ Target Menggusur: Raja Laser (#1) & Kingsign (#2)',
+      statusType: 'warning'
     },
     {
       id: 'kw-2',
@@ -164,18 +148,9 @@ let KPI_DATA = {
       keyword: 'laser cutting bsd serpong',
       location: 'BSD & Gading Serpong',
       position: 'Indexing / Page 2',
-      rankNumber: 16,
       trend: '🚀 Exact Match Armed',
-      url: '/jasa-laser-cutting-bsd/',
-      status: '⚔️ Target: lytro.id (#1) & sobatlaser (#2)',
-      statusType: 'warning',
-      topCompetitor: 'lytro.id',
-      competitorsPage1: [
-        { rank: 1, name: 'Lytro Laser (lytro.id)', strength: 'SEO Page 1 BSD & Serpong' },
-        { rank: 2, name: 'Sobat Laser (sobatlaser.com)', strength: 'Free ongkir BSD cluster' },
-        { rank: 3, name: 'Barz Laser (barz-laser.com)', strength: 'Partisi & fasad Gading Serpong' }
-      ],
-      actionPlan: 'Optimasi landing page BSD dengan kalkulator estimasi biaya express 1 hari jadi.'
+      status: '⚔️ Target Menggusur: lytro.id (#1) & sobatlaser (#2)',
+      statusType: 'warning'
     },
     {
       id: 'kw-3',
@@ -184,17 +159,9 @@ let KPI_DATA = {
       keyword: 'harga laser cutting per meter',
       location: 'Jabodetabek Wide',
       position: 'Indexing / Page 2',
-      rankNumber: 18,
       trend: '⏳ Crawling Google',
-      url: '/harga-laser-cutting-per-meter/',
-      status: '⚔️ Target: tritunggalmetal.com (#1)',
-      statusType: 'warning',
-      topCompetitor: 'tritunggalmetal.com',
-      competitorsPage1: [
-        { rank: 1, name: 'Tritunggal Metal (tritunggalmetal.com)', strength: 'Tabel harga komprehensif' },
-        { rank: 2, name: 'Dania Da (daniada.com)', strength: 'Katalog harga cutting per mm' }
-      ],
-      actionPlan: 'Tampilkan tabel harga real-time plat besi, ACP, stainless, akrilik di halaman /harga/.'
+      status: '⚔️ Target Menggusur: tritunggalmetal.com (#1)',
+      statusType: 'warning'
     },
     {
       id: 'kw-4',
@@ -202,19 +169,10 @@ let KPI_DATA = {
       domainName: 'rajacuttinglaser.com',
       keyword: 'pagar laser cutting mewah',
       location: 'Jabodetabek Residensial',
-      position: 'Top 3',
-      rankNumber: 3,
+      position: 'Top 3 (Page 1)',
       trend: '🔺 +3 Naek',
-      url: '/produk/pagar-laser-cutting/',
       status: '💎 PODIUM HALAMAN 1',
-      statusType: 'success',
-      topCompetitor: 'pagarlaser.com',
-      competitorsPage1: [
-        { rank: 1, name: 'Pagar Laser Jakarta (pagarlaser.com)', strength: 'Portofolio rumah mewah PIK & Pondok Indah' },
-        { rank: 2, name: 'Raja Laser (rajalasercutting.com)', strength: 'Atelier custom pagar motif islami' },
-        { rank: 3, name: 'RajaCuttingLaser.com (KITA)', strength: 'Galeri 100+ motif CAD/DXF premium' }
-      ],
-      actionPlan: 'Tambah video reel/shorts showcase pagar finishing powder coating antik.'
+      statusType: 'success'
     },
     {
       id: 'kw-5',
@@ -222,17 +180,10 @@ let KPI_DATA = {
       domainName: 'rajacuttinglaser.com',
       keyword: 'mihrab masjid laser cutting',
       location: 'Nasional / DKM Masjid',
-      position: 'Top 1',
-      rankNumber: 1,
+      position: 'Top 1 (Page 1)',
       trend: '👑 Juara 1 Google',
       status: '👑 DOMINASI RANK #1 NASIONAL',
-      statusType: 'success',
-      topCompetitor: 'rajacuttinglaser.com (KITA)',
-      competitorsPage1: [
-        { rank: 1, name: 'RajaCuttingLaser.com (KITA)', strength: 'Pionir ornamen kaligrafi & mihrab masjid GRC/Kuningan' },
-        { rank: 2, name: 'OrnamenMasjid.id', strength: 'Spesialis kubah & krawangan' }
-      ],
-      actionPlan: 'Pertahankan juara 1 dengan update studi kasus masjid agung dan review DKM.'
+      statusType: 'success'
     },
     {
       id: 'kw-6',
@@ -240,20 +191,10 @@ let KPI_DATA = {
       domainName: 'jasalasercutting.com',
       keyword: 'jasa laser cutting plat besi',
       location: 'Banten & Jabodetabek',
-      position: 'Top 4',
-      rankNumber: 4,
+      position: 'Top 4 (Page 1)',
       trend: '🔺 +2 Naek (EMD Power)',
-      url: '/jasa-laser-fiber',
-      status: '⚔️ Target: anugerahmetal.com (#1)',
-      statusType: 'success',
-      topCompetitor: 'anugerahmetal.com',
-      competitorsPage1: [
-        { rank: 1, name: 'PT Metal Anugerah Suksestama (anugerahmetal.com)', strength: 'Pabrikan besar, otoritas tinggi industri' },
-        { rank: 2, name: 'Sobat Laser (sobatlaser.com)', strength: 'Layanan 24 jam & armada pickup' },
-        { rank: 3, name: 'Sumber Jaya Laser (sumberjayalaser.com)', strength: 'Stok plat besi tebal lengkap' },
-        { rank: 4, name: 'JasaLaserCutting.com (KITA)', strength: 'EMD Domain authority + Fiber 12kW' }
-      ],
-      actionPlan: 'Bongkar kelemahan AnugerahMetal: Tambah tabel ketebalan 1mm-25mm & gas Nitrogen purity 99.9%.'
+      status: '⚔️ Target Menggusur: anugerahmetal.com (#1)',
+      statusType: 'success'
     },
     {
       id: 'kw-7',
@@ -261,79 +202,350 @@ let KPI_DATA = {
       domainName: 'jasalasercutting.com',
       keyword: 'jasa cnc router acp fasad',
       location: 'Industri & Gedung',
-      position: 'Top 3',
-      rankNumber: 3,
+      position: 'Top 3 (Page 1)',
       trend: '🔺 +2 Naek',
-      url: '/jasa-cnc-router',
       status: '💎 PODIUM HALAMAN 1',
-      statusType: 'success',
-      topCompetitor: 'daniada.com',
-      competitorsPage1: [
-        { rank: 1, name: 'Dania Da (daniada.com)', strength: 'Vendor fasad gedung & ACP Seven' },
-        { rank: 2, name: 'Barz Laser (barz-laser.com)', strength: 'Spesialis secondary skin' },
-        { rank: 3, name: 'JasaLaserCutting.com (KITA)', strength: 'Silo teknis ACP & CNC Router meja 2x4 meter' }
-      ],
-      actionPlan: 'Upload downloadable file DXF parametric facade untuk arsitek dan drafter.'
+      statusType: 'success'
+    },
+    {
+      id: 'kw-8',
+      domainKey: 'jasalasercutting',
+      domainName: 'jasalasercutting.com',
+      keyword: 'jasa potong plat besi tebal tangerang',
+      location: 'Banten Industrial',
+      position: 'Top 2 (Page 1)',
+      trend: '🔺 +3 Naek',
+      status: '💎 PODIUM TOP 2 BANTEN',
+      statusType: 'success'
     }
   ],
 
+  // 4. Raw Google Ads Search Terms & Negative Keyword Vault
+  searchTermsVault: [
+    {
+      id: 'st-1',
+      term: 'laser cutting plat besi',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'buyer',
+      intent: '🔥 High-Intent B2B Buyer',
+      clicks: 5,
+      cost: 'Rp 55.209',
+      avgCpc: 'Rp 11.041',
+      conversions: '3 Lead WA',
+      action: 'Targeted Organik di /jasa-laser-cutting-plat-besi/ (Rank #4)',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-2',
+      term: 'cutting laser terdekat',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'location',
+      intent: '📍 Local High-Intent (Urgent)',
+      clicks: 7,
+      cost: 'Rp 51.402',
+      avgCpc: 'Rp 7.343',
+      conversions: '4 Lead WA',
+      action: 'Diambil alih 15 Hub Lokasi (Bintaro Sektor 1-9 & BSD)',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-3',
+      term: 'laser cut stainless steel',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'buyer',
+      intent: '🔥 High-Intent Precision Steel',
+      clicks: 2,
+      cost: 'Rp 46.145',
+      avgCpc: 'Rp 23.072',
+      conversions: '2 Lead WA (Tiket Gede)',
+      action: 'Targeted Organik di /jasa-laser-cutting-stainless/',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-4',
+      term: 'jasa laser cutting terdekat',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'location',
+      intent: '📍 Local Buyer Tangsel',
+      clicks: 6,
+      cost: 'Rp 39.774',
+      avgCpc: 'Rp 6.629',
+      conversions: '3 Lead WA',
+      action: 'Targeted Organik di /lokasi/bintaro/ & /lokasi/bsd/',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-5',
+      term: 'laser plat besi',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'buyer',
+      intent: '🔥 Workshop & Tukang Las Intent',
+      clicks: 5,
+      cost: 'Rp 35.809',
+      avgCpc: 'Rp 7.161',
+      conversions: '2 Lead WA',
+      action: 'Targeted Organik di jasalasercutting.com/jasa-laser-fiber',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-6',
+      term: 'jasa cutting plat besi terdekat',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'location',
+      intent: '📍 Local B2B Buyer Urgent',
+      clicks: 4,
+      cost: 'Rp 30.439',
+      avgCpc: 'Rp 7.609',
+      conversions: '2 Lead WA',
+      action: 'Targeted Organik di tepatlaser.com',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-7',
+      term: 'jasa cnc aluminium',
+      campaign: 'Jasa Laser Cutting MDF Oktober',
+      category: 'buyer',
+      intent: '🔥 Industrial Machining',
+      clicks: 4,
+      cost: 'Rp 48.454',
+      avgCpc: 'Rp 12.113',
+      conversions: '1 Lead WA (Proyek Fasad)',
+      action: 'Targeted Organik di jasalasercutting.com/jasa-cnc-router',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-8',
+      term: 'cutting mdf',
+      campaign: 'Jasa Laser Cutting MDF Oktober',
+      category: 'buyer',
+      intent: '🔥 Interior & Furniture Intent',
+      clicks: 2,
+      cost: 'Rp 41.352',
+      avgCpc: 'Rp 20.676',
+      conversions: '1 Lead WA',
+      action: 'Targeted Organik di /jasa-laser-cutting-mdf-ai/',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-9',
+      term: 'laser cutting kayu',
+      campaign: 'Jasa Laser Cutting MDF Oktober',
+      category: 'buyer',
+      intent: '🔥 Woodwork / Handicraft',
+      clicks: 3,
+      cost: 'Rp 63.644',
+      avgCpc: 'Rp 21.214',
+      conversions: '1 Lead WA',
+      action: 'Targeted Organik di /jasa-laser-cutting-mdf-ai/',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-10',
+      term: 'pagar laser cutting bintaro',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'location',
+      intent: '📍 Luxury Residential Bintaro',
+      clicks: 8,
+      cost: 'Rp 42.000',
+      avgCpc: 'Rp 5.250',
+      conversions: '4 Lead WA',
+      action: 'Targeted di tepatlaser.com/produk/pagar-laser-cutting/',
+      status: 'ACTIVE_ORGANIC'
+    },
+    {
+      id: 'st-11',
+      term: 'mihrab masjid laser cutting',
+      campaign: 'RajaCutting Campaign',
+      category: 'buyer',
+      intent: '👑 High-Ticket DKM Masjid',
+      clicks: 6,
+      cost: 'Rp 38.000',
+      avgCpc: 'Rp 6.333',
+      conversions: '3 Lead WA (Rank #1 Google)',
+      action: 'Ads DIBATALKAN -> Diambil Alih 100% Organik (Save Budget)',
+      status: 'ANTI_CANNIBALIZED'
+    },
+    {
+      id: 'st-12',
+      term: 'fasad laser cutting acp seven',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'buyer',
+      intent: '🔥 Arsitek & Kontraktor Gedung',
+      clicks: 5,
+      cost: 'Rp 45.000',
+      avgCpc: 'Rp 9.000',
+      conversions: '2 Lead WA',
+      action: 'Targeted di jasalasercutting.com/jasa-cnc-router',
+      status: 'ACTIVE_ORGANIC'
+    },
+
+    // Negative Terms
+    {
+      id: 'st-13',
+      term: 'download motif laser cutting gratis',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'negative',
+      intent: '🚫 Zero Intent (Pencari Gratisan)',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 54.000)',
+      avgCpc: 'Rp 4.500',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    },
+    {
+      id: 'st-14',
+      term: 'file dxf laser cutting free',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'negative',
+      intent: '🚫 Zero Intent (Drafter/Mahasiswa)',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 40.500)',
+      avgCpc: 'Rp 4.500',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    },
+    {
+      id: 'st-15',
+      term: 'harga mesin laser cutting fiber bekas',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'negative',
+      intent: '🚫 Non-Buyer (Cari Jual Beli Mesin)',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 72.000)',
+      avgCpc: 'Rp 6.000',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    },
+    {
+      id: 'st-16',
+      term: 'lowongan operator mesin laser cutting',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'negative',
+      intent: '🚫 Non-Buyer (Pencari Kerja/Loker)',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 36.000)',
+      avgCpc: 'Rp 4.500',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    },
+    {
+      id: 'st-17',
+      term: 'cara membuat pagar laser cutting sendiri',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'negative',
+      intent: '🚫 DIY Tutorial / Pelajar',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 27.000)',
+      avgCpc: 'Rp 4.500',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    },
+    {
+      id: 'st-18',
+      term: 'gantungan kunci akrilik 1 pcs',
+      campaign: 'Jasa Laser Cutting Akrilik',
+      category: 'negative',
+      intent: '🚫 Eceran Receh (Low Ticket / Bouncing)',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 45.000)',
+      avgCpc: 'Rp 4.500',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    },
+    {
+      id: 'st-19',
+      term: 'jual mesin laser bodor second olx',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'negative',
+      intent: '🚫 Jual Beli Mesin Second',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 63.000)',
+      avgCpc: 'Rp 7.000',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    },
+    {
+      id: 'st-20',
+      term: 'skripsi analisis kekuatan laser fiber',
+      campaign: 'AI - Jasa Laser Cutting Metal',
+      category: 'negative',
+      intent: '🚫 Akademik / Mahasiswa',
+      clicks: 0,
+      cost: 'Rp 0 (Saved Rp 31.500)',
+      avgCpc: 'Rp 4.500',
+      conversions: '0 (100% Boncos)',
+      action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+      status: 'BLOCKED_NEGATIVE'
+    }
+  ],
+
+  // 5. AI Workforce Productivity Scorecard
   staffPerformance: [
     {
       id: 'aero-writer',
       name: 'Maya',
-      title: 'Chief Content & SEO Architect',
+      title: 'Lead SEO & Tech Copywriter',
       avatar: '👩‍💼',
       color: '#00f0ff',
-      kpiScore: '100%',
-      kpiStatus: '3-DOMAIN ENGINE ACTIVE',
+      kpiScore: '98%',
+      kpiStatus: '107 ASTRO PAGES LIVE',
       metrics: [
-        { label: 'Jadwal Hari Ini', value: 'TepatLaser (Bintaro)' },
-        { label: 'Jadwal Besok', value: 'RajaCutting (Pagar Mewah)' },
-        { label: 'Jadwal Lusa', value: 'JasaLaser (Plat 12mm)' },
-        { label: 'Total Pages Maintained', value: '137 Halaman' }
-      ]
-    },
-    {
-      id: 'hermes-sentry',
-      name: 'Budi',
-      title: 'Lead Ops & Multi-Domain Dispatcher',
-      avatar: '👨‍💼',
-      color: '#00ff66',
-      kpiScore: '100%',
-      kpiStatus: '3 WEBSITES ARMED',
-      metrics: [
-        { label: 'TepatLaser Leads', value: '24 Leads / mgg' },
-        { label: 'RajaCutting Leads', value: '14 Leads / mgg' },
-        { label: 'JasaLaser Leads', value: '10 Leads / mgg' },
-        { label: 'Telegram Gateway', value: 'Single Cockpit Active' }
+        { label: 'Artikel E-E-A-T', value: '107 Halaman' },
+        { label: 'Coverage Bintaro/BSD', value: '15 Silo Hub' },
+        { label: 'Fakta Presisi', value: '±0.02mm, 12kW' },
+        { label: 'Validasi Skema', value: '100% Lolos AST' }
       ]
     },
     {
       id: 'radar-x',
       name: 'Nadia',
-      title: 'SERP & GEO Intelligence Analyst',
+      title: 'Data & SERP Growth Analyst',
       avatar: '👩‍💻',
       color: '#ffe600',
-      kpiScore: '100%',
-      kpiStatus: 'MULTI-RADAR ON',
+      kpiScore: '94%',
+      kpiStatus: '76% HALAMAN 1 GOOGLE',
       metrics: [
-        { label: 'Keywords Tracked', value: '30 Seeds (3 Domain)' },
-        { label: 'Page 1 Podiums', value: '23 Ranking Top 3' },
-        { label: 'GEO Citation Index', value: '94% in ChatGPT' }
+        { label: 'Keywords Tracked', value: '30 Inti' },
+        { label: 'Posisi Halaman 1', value: '23 Keyword' },
+        { label: 'GEO Citation AI', value: '94% Densitas' },
+        { label: 'SERP Telemetry', value: 'Live Calibrated' }
       ]
     },
     {
       id: 'iron-shield',
       name: 'Rian',
-      title: 'PPC Shield & Anti-Cannibalization',
+      title: 'PPC Architect & Budget Auditor',
       avatar: '👨‍💻',
       color: '#ff0055',
-      kpiScore: '100%',
-      kpiStatus: 'FLEET GUARDED',
+      kpiScore: '114%',
+      kpiStatus: 'HEMAT RP 7.85JT / MINGGU',
       metrics: [
-        { label: 'Negative KW Shield', value: '1.909 Keywords' },
-        { label: 'Cannibalization Rate', value: '0% (Clean Separation)' },
-        { label: 'Ad Budget Saved', value: 'Rp 7.85M / minggu' }
+        { label: 'Budget Ads Saved', value: 'Rp 7.850.000/wk' },
+        { label: 'Keyword Boncos Blocked', value: '1.909 Terms' },
+        { label: 'Ad Cannibalization', value: '0% (Eliminated)' },
+        { label: 'Average CPC Organic', value: 'Rp 4.500' }
+      ]
+    },
+    {
+      id: 'hermes-sentry',
+      name: 'Budi',
+      title: 'Customer Success & Lead Ops',
+      avatar: '👨‍💼',
+      color: '#00ff66',
+      kpiScore: '96%',
+      kpiStatus: '48 LEADS WA / MINGGU',
+      metrics: [
+        { label: 'Total Leads 7D', value: '48 Leads WA' },
+        { label: 'Lead TepatLaser', value: '24 (Bintaro/BSD)' },
+        { label: 'Lead RajaCutting', value: '14 (Mihrab/Pagar)' },
+        { label: 'Lead JasaLaser', value: '10 (B2B Industri)' }
       ]
     },
     {
@@ -348,7 +560,7 @@ let KPI_DATA = {
         { label: 'TepatLaser Deploy', value: 'Hostinger 200 OK' },
         { label: 'RajaCutting Deploy', value: 'Hostinger 200 OK' },
         { label: 'JasaLaser Deploy', value: 'Hostinger 200 OK' },
-        { label: 'VPS 163.61.44.41', value: '25MB RAM (Cool & Stable)' }
+        { label: 'VPS 163.61.44.41', value: '11MB RAM (Ultra Light)' }
       ]
     }
   ]
@@ -361,16 +573,29 @@ async function syncLiveSerpData() {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    const res = await fetch('/api/serp-audit', { headers });
-    if (res.ok) {
-      const data = await res.json();
+
+    // 1. Sync SERP Audit
+    const resSerp = await fetch('/api/serp-audit', { headers });
+    if (resSerp.ok) {
+      const data = await resSerp.json();
       if (data.keywords && data.keywords.length > 0) {
         KPI_DATA.serpLeaderboard = data.keywords;
-        renderKpiTables();
       }
     }
+
+    // 2. Sync Search Terms Vault
+    const resSt = await fetch('/api/search-terms', { headers });
+    if (resSt.ok) {
+      const dataSt = await resSt.json();
+      if (dataSt.terms && dataSt.terms.length > 0) {
+        KPI_DATA.searchTermsVault = dataSt.terms;
+      }
+    }
+
+    renderKpiTables();
   } catch (err) {
     console.log('[KPI] Using local telemetry registry.');
+    renderKpiTables();
   }
 }
 
@@ -398,135 +623,160 @@ function filterFleet(domainKey) {
   }
 
   // 3. Play audio effect if available
-  if (window.AudioEngine && window.AudioEngine.playClick) {
-    window.AudioEngine.playClick();
+  if (window.audioFX && window.audioFX.playBlip) {
+    window.audioFX.playBlip(700, 'triangle', 0.08);
   }
 
-  // 4. Re-render filtered tables
+  // 4. Re-render Leaderboard
   renderKpiTables();
 }
 
+function filterSearchTerms(categoryKey) {
+  CURRENT_SEARCHTERMS_FILTER = categoryKey;
+
+  document.querySelectorAll('.searchterms-filters .fleet-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`btn-st-${categoryKey}`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (window.audioFX && window.audioFX.playBlip) {
+    window.audioFX.playBlip(650, 'triangle', 0.08);
+  }
+
+  renderSearchTermsTable();
+}
+
 function renderKpiTables() {
-  // 1. Render GA4 Properties Grid
+  // 1. Render GA4 Grid
   const ga4Grid = document.getElementById('ga4-properties-grid');
   if (ga4Grid) {
     ga4Grid.innerHTML = '';
-    const filteredGA4 = CURRENT_FLEET_FILTER === 'all' 
-      ? KPI_DATA.ga4Properties 
-      : KPI_DATA.ga4Properties.filter(p => p.domainKey === CURRENT_FLEET_FILTER);
-
-    filteredGA4.forEach(prop => {
+    KPI_DATA.ga4Properties.forEach(prop => {
       const card = document.createElement('div');
-      card.className = 'ga4-prop-card';
+      card.className = 'ga4-card';
       card.innerHTML = `
-        <div class="ga4-header">
-          <div>
-            <strong class="text-white text-base">${prop.name}</strong>
-            <span class="ga4-tag font-mono">${prop.tagId}</span>
-          </div>
-          <span class="badge-vps" style="background: rgba(0, 255, 102, 0.15); color: ${prop.statusColor}">${prop.status}</span>
+        <div class="ga4-top">
+          <span class="ga4-name">${prop.name}</span>
+          <span class="ga4-badge" style="color: ${prop.badgeColor}; border-color: ${prop.badgeColor}">${prop.badge}</span>
         </div>
-        <p class="ga4-role">${prop.role}</p>
-        <div class="ga4-metrics-grid">
-          <div class="ga4-m-item">
-            <span class="m-lbl">Sesi Live:</span>
-            <span class="m-val text-green">${prop.liveUsersToday}</span>
+        <div class="ga4-domain font-mono">${prop.domain} &bull; ${prop.propertyId}</div>
+        <div class="ga4-metrics-row">
+          <div class="metric-box">
+            <span class="lbl">Sesi 7 Hari:</span>
+            <span class="val text-green">${prop.sessions7d}</span>
           </div>
-          <div class="ga4-m-item">
-            <span class="m-lbl">Rata-Rata Dwell:</span>
-            <span class="m-val text-cyan">${prop.avgDwellTime}</span>
+          <div class="metric-box">
+            <span class="lbl">Top Channel:</span>
+            <span class="val text-cyan">${prop.topChannel}</span>
           </div>
-          <div class="ga4-m-item">
-            <span class="m-lbl">Halaman Terbit:</span>
-            <span class="m-val text-yellow">${prop.pagesCount}</span>
+          <div class="metric-box">
+            <span class="lbl">WA Leads:</span>
+            <span class="val text-yellow">${prop.waConversions}</span>
           </div>
-          <div class="ga4-m-item">
-            <span class="m-lbl">Konversi WA:</span>
-            <span class="m-val text-magenta">${prop.waConversions}</span>
+          <div class="metric-box">
+            <span class="lbl">Conv Rate:</span>
+            <span class="val text-magenta">${prop.crRate}</span>
           </div>
-        </div>
-        <div class="ga4-geofootprint">
-          <span class="text-muted">📍 Top Geolocation:</span>
-          <span class="text-white text-xs">${prop.topCity}</span>
         </div>
       `;
       ga4Grid.appendChild(card);
     });
   }
 
-  // 2. Render GEO Radar Grid
+  // 2. Render GEO AI Radar Grid
   const geoGrid = document.getElementById('geo-radar-grid');
   if (geoGrid) {
     geoGrid.innerHTML = '';
-    KPI_DATA.geoEngines.forEach(item => {
+    KPI_DATA.geoRadar.forEach(radar => {
       const card = document.createElement('div');
-      card.className = 'geo-radar-card';
+      card.className = 'geo-card';
       card.innerHTML = `
-        <div class="geo-card-top">
-          <div class="geo-engine-name">
-            <span class="geo-logo">${item.logo}</span>
-            <strong class="text-white">${item.engine}</strong>
+        <div class="geo-top">
+          <div class="geo-engine-info">
+            <span class="geo-avatar">${radar.avatar}</span>
+            <div>
+              <strong class="geo-engine-name">${radar.engine}</strong>
+              <span class="geo-format font-mono">${radar.formatValid}</span>
+            </div>
           </div>
-          <div style="display: flex; gap: 6px; align-items: center;">
-            <span class="badge-geo font-mono">${item.domainBadge}</span>
-            <span class="badge-kpi success">${item.status}</span>
-          </div>
+          <span class="badge-status-pill success">${radar.score} DENSITY</span>
         </div>
         <div class="geo-query-box">
-          <span class="font-mono text-xs text-muted">Prompt Target:</span>
-          <p class="text-yellow text-sm font-semibold">"${item.queryTarget}"</p>
+          <span class="query-tag">TESTED QUERY:</span>
+          <span class="query-text">${radar.sampleQuery}</span>
         </div>
-        <p class="geo-details text-xs text-gray-300 mt-2">${item.details}</p>
+        <div class="geo-snippet-box font-mono">
+          ${radar.citationSnippet}
+        </div>
       `;
       geoGrid.appendChild(card);
     });
   }
 
-  // 3. Render SERP Leaderboard (Interactive with Competitor Battle Modal)
+  // 3. Render SERP Leaderboard Table with Fleet Filter
   const serpTbody = document.getElementById('kpi-serp-tbody');
   if (serpTbody) {
     serpTbody.innerHTML = '';
-    const filteredSERP = CURRENT_FLEET_FILTER === 'all'
-      ? KPI_DATA.serpLeaderboard
-      : KPI_DATA.serpLeaderboard.filter(item => item.domainKey === CURRENT_FLEET_FILTER);
-
-    filteredSERP.forEach((item, index) => {
-      const tr = document.createElement('tr');
-      tr.title = 'Klik untuk melihat penguasa Google Page 1 & Action Plan';
-      tr.onclick = () => openCompetitorModal(item);
-      tr.innerHTML = `
-        <td>
-          <strong class="text-white">${item.keyword}</strong>
-          <span class="block text-xs font-mono text-cyan" style="opacity: 0.8">${item.domainName}</span>
-        </td>
-        <td><span class="text-muted">${item.location}</span></td>
-        <td><span class="rank-badge ${item.rankNumber <= 3 ? 'gold' : ''}">${item.position}</span></td>
-        <td><span class="text-yellow font-mono">${item.trend}</span></td>
-        <td><span class="badge-status-pill ${item.statusType}">${item.status}</span></td>
-      `;
-      serpTbody.appendChild(tr);
+    
+    const filteredKeywords = KPI_DATA.serpLeaderboard.filter(item => {
+      if (CURRENT_FLEET_FILTER === 'all') return true;
+      return item.domainKey === CURRENT_FLEET_FILTER;
     });
+
+    if (filteredKeywords.length === 0) {
+      serpTbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+            Tidak ada keyword untuk filter domain ini.
+          </td>
+        </tr>
+      `;
+    } else {
+      filteredKeywords.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.title = 'Klik untuk melihat analisis pertarungan kompetitor Page 1';
+        tr.onclick = () => openCompetitorModal(item);
+        tr.innerHTML = `
+          <td>
+            <strong>${item.keyword}</strong>
+            <span class="sub-text font-mono">${item.domainName} &bull; ${item.url || ''}</span>
+          </td>
+          <td><span class="badge-tag">${item.location}</span></td>
+          <td>
+            <span class="rank-badge ${item.position.includes('Top 1') || item.position.includes('Top 2') || item.position.includes('Top 3') ? 'gold' : 'silver'}">
+              ${item.position}
+            </span>
+          </td>
+          <td class="font-mono text-cyan">${item.trend}</td>
+          <td>
+            <span class="badge-status-pill ${item.statusType || 'success'}">
+              ${item.status}
+            </span>
+          </td>
+        `;
+        serpTbody.appendChild(tr);
+      });
+    }
   }
 
-  // 4. Render Staff Performance
+  // 4. Render Staff Performance Scorecard
   const staffList = document.getElementById('kpi-staff-list');
   if (staffList) {
     staffList.innerHTML = '';
     KPI_DATA.staffPerformance.forEach(staff => {
       const card = document.createElement('div');
-      card.className = 'staff-kpi-card';
-      card.style.borderLeftColor = staff.color;
+      card.className = 'staff-card';
       card.innerHTML = `
         <div class="staff-card-header">
-          <div class="staff-left">
+          <div class="staff-info">
             <span class="staff-avatar">${staff.avatar}</span>
             <div>
               <strong style="color: ${staff.color}">${staff.name}</strong>
-              <span class="staff-role-sub">${staff.title}</span>
+              <span class="staff-role">${staff.title}</span>
             </div>
           </div>
           <div class="staff-score-badge">
-            <span class="score-val">${staff.kpiScore}</span>
+            <span class="score-num font-mono" style="color: ${staff.color}">${staff.kpiScore}</span>
             <span class="score-lbl">${staff.kpiStatus}</span>
           </div>
         </div>
@@ -542,6 +792,69 @@ function renderKpiTables() {
       staffList.appendChild(card);
     });
   }
+
+  // 5. Render Google Ads Search Terms Vault Table
+  renderSearchTermsTable();
+}
+
+function renderSearchTermsTable() {
+  const tbody = document.getElementById('kpi-searchterms-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const vault = KPI_DATA.searchTermsVault || [];
+  const filtered = vault.filter(item => {
+    if (CURRENT_SEARCHTERMS_FILTER === 'all') return true;
+    if (CURRENT_SEARCHTERMS_FILTER === 'buyer') return item.category === 'buyer';
+    if (CURRENT_SEARCHTERMS_FILTER === 'location') return item.category === 'location';
+    if (CURRENT_SEARCHTERMS_FILTER === 'negative') return item.category === 'negative';
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+          Tidak ada search term untuk kategori ini.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  filtered.forEach(item => {
+    const isNegative = item.category === 'negative';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <strong style="color: ${isNegative ? 'var(--accent-magenta)' : '#fff'}">
+          ${isNegative ? '🚫 ' : '🎯 '}${item.term}
+        </strong>
+        <span class="sub-text font-mono" style="color: ${isNegative ? '#ff4d88' : 'var(--accent-cyan)'}">
+          ${item.intent}
+        </span>
+      </td>
+      <td><span class="badge-tag">${item.campaign}</span></td>
+      <td>
+        <span class="badge-status-pill ${isNegative ? 'alert' : 'success'} font-mono">
+          ${isNegative ? '🛡️ NEGATIVE BLOCKED' : '🔥 HIGH-INTENT BUYER'}
+        </span>
+      </td>
+      <td>
+        <div style="font-size: 11px;">
+          <span class="font-mono text-yellow font-bold">${item.cost}</span>
+          <span class="sub-text font-mono" style="display:block;">${item.clicks} Clicks &bull; Avg CPC ${item.avgCpc}</span>
+        </div>
+      </td>
+      <td>
+        <span style="font-size: 11px; color: ${isNegative ? 'var(--accent-magenta)' : 'var(--accent-green)'}; display:block; font-weight:600;">
+          ${item.action}
+        </span>
+        <span class="sub-text font-mono">${item.conversions}</span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function openCompetitorModal(item) {

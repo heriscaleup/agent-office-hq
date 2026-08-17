@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
-import { KEYWORDS_AUDIT_DATA, getAuditSummary } from './serp_auditor.mjs';
+import { KEYWORDS_AUDIT_DATA, SEARCH_TERMS_VAULT_DATA, getAuditSummary } from './serp_auditor.mjs';
 import { processAgentChat, AGENT_KNOWLEDGE } from './agent_brain.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -182,6 +182,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // SERP Rank Audit API
     if (reqPath === '/api/serp-audit') {
       const summary = getAuditSummary();
       const responseData = {
@@ -192,6 +193,19 @@ const server = http.createServer(async (req, res) => {
       };
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(responseData, null, 2));
+      return;
+    }
+
+    // Raw Google Ads Search Terms & Negative Vault API
+    if (reqPath === '/api/search-terms') {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({
+        status: 'success',
+        totalSearchTerms: SEARCH_TERMS_VAULT_DATA.length,
+        buyerCount: SEARCH_TERMS_VAULT_DATA.filter(s => s.category === 'buyer' || s.category === 'location').length,
+        blockedNegativeCount: SEARCH_TERMS_VAULT_DATA.filter(s => s.category === 'negative').length,
+        terms: SEARCH_TERMS_VAULT_DATA
+      }, null, 2));
       return;
     }
 
@@ -233,5 +247,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🎮 TepatLaser AI Swarm HQ & Interrogation Engine is live on: http://localhost:${PORT}`);
+  console.log(`🎮 TepatLaser AI Swarm HQ & Search Terms Vault is live on: http://localhost:${PORT}`);
 });

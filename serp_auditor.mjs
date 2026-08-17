@@ -1,4 +1,4 @@
-// Live SERP Auditor & Competitor Intelligence Engine for AI Swarm HQ
+// Live SERP Auditor, Competitor Intelligence & Google Ads Search Terms Vault
 
 export const KEYWORDS_AUDIT_DATA = [
   {
@@ -159,7 +159,274 @@ export const KEYWORDS_AUDIT_DATA = [
       { rank: 1, name: 'PT Metal Anugerah (anugerahmetal.com)', strength: 'Kapasitas tonase pabrik' },
       { rank: 2, name: 'JasaLaserCutting.com (KITA)', strength: 'Radius Banten-Cilegon & Fiber 12kW' }
     ],
-    actionPlan: 'Gusur AnugerahMetal dengan penawaran gratis sample potongan potongan uji presisi 0.02mm.'
+    actionPlan: 'Gusur AnugerahMetal dengan penawaran gratis sample potongan uji presisi 0.02mm.'
+  }
+];
+
+// Raw Real Google Ads Search Terms Intelligence & Negative Defense Vault
+export const SEARCH_TERMS_VAULT_DATA = [
+  // 1. High Intent Buyer Search Terms (Converted to Organic Silos)
+  {
+    id: 'st-1',
+    term: 'laser cutting plat besi',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'buyer',
+    intent: '🔥 High-Intent B2B Buyer',
+    clicks: 5,
+    cost: 'Rp 55.209',
+    avgCpc: 'Rp 11.041',
+    conversions: '3 Lead WA',
+    action: 'Targeted Organik di /jasa-laser-cutting-plat-besi/ (Rank #4)',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-2',
+    term: 'cutting laser terdekat',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'location',
+    intent: '📍 Local High-Intent (Urgent)',
+    clicks: 7,
+    cost: 'Rp 51.402',
+    avgCpc: 'Rp 7.343',
+    conversions: '4 Lead WA',
+    action: 'Diambil alih 15 Hub Lokasi (Bintaro Sektor 1-9 & BSD)',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-3',
+    term: 'laser cut stainless steel',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'buyer',
+    intent: '🔥 High-Intent Precision Steel',
+    clicks: 2,
+    cost: 'Rp 46.145',
+    avgCpc: 'Rp 23.072',
+    conversions: '2 Lead WA (Tiket Gede)',
+    action: 'Targeted Organik di /jasa-laser-cutting-stainless/',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-4',
+    term: 'jasa laser cutting terdekat',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'location',
+    intent: '📍 Local Buyer Tangsel',
+    clicks: 6,
+    cost: 'Rp 39.774',
+    avgCpc: 'Rp 6.629',
+    conversions: '3 Lead WA',
+    action: 'Targeted Organik di /lokasi/bintaro/ & /lokasi/bsd/',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-5',
+    term: 'laser plat besi',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'buyer',
+    intent: '🔥 Workshop & Tukang Las Intent',
+    clicks: 5,
+    cost: 'Rp 35.809',
+    avgCpc: 'Rp 7.161',
+    conversions: '2 Lead WA',
+    action: 'Targeted Organik di jasalasercutting.com/jasa-laser-fiber',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-6',
+    term: 'jasa cutting plat besi terdekat',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'location',
+    intent: '📍 Local B2B Buyer Urgent',
+    clicks: 4,
+    cost: 'Rp 30.439',
+    avgCpc: 'Rp 7.609',
+    conversions: '2 Lead WA',
+    action: 'Targeted Organik di tepatlaser.com',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-7',
+    term: 'jasa cnc aluminium',
+    campaign: 'Jasa Laser Cutting MDF Oktober',
+    category: 'buyer',
+    intent: '🔥 Industrial Machining',
+    clicks: 4,
+    cost: 'Rp 48.454',
+    avgCpc: 'Rp 12.113',
+    conversions: '1 Lead WA (Proyek Fasad)',
+    action: 'Targeted Organik di jasalasercutting.com/jasa-cnc-router',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-8',
+    term: 'cutting mdf',
+    campaign: 'Jasa Laser Cutting MDF Oktober',
+    category: 'buyer',
+    intent: '🔥 Interior & Furniture Intent',
+    clicks: 2,
+    cost: 'Rp 41.352',
+    avgCpc: 'Rp 20.676',
+    conversions: '1 Lead WA',
+    action: 'Targeted Organik di /jasa-laser-cutting-mdf-ai/',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-9',
+    term: 'laser cutting kayu',
+    campaign: 'Jasa Laser Cutting MDF Oktober',
+    category: 'buyer',
+    intent: '🔥 Woodwork / Handicraft',
+    clicks: 3,
+    cost: 'Rp 63.644',
+    avgCpc: 'Rp 21.214',
+    conversions: '1 Lead WA',
+    action: 'Targeted Organik di /jasa-laser-cutting-mdf-ai/',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-10',
+    term: 'pagar laser cutting bintaro',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'location',
+    intent: '📍 Luxury Residential Bintaro',
+    clicks: 8,
+    cost: 'Rp 42.000',
+    avgCpc: 'Rp 5.250',
+    conversions: '4 Lead WA',
+    action: 'Targeted di tepatlaser.com/produk/pagar-laser-cutting/',
+    status: 'ACTIVE_ORGANIC'
+  },
+  {
+    id: 'st-11',
+    term: 'mihrab masjid laser cutting',
+    campaign: 'RajaCutting Campaign',
+    category: 'buyer',
+    intent: '👑 High-Ticket DKM Masjid',
+    clicks: 6,
+    cost: 'Rp 38.000',
+    avgCpc: 'Rp 6.333',
+    conversions: '3 Lead WA (Rank #1 Google)',
+    action: 'Ads DIBATALKAN -> Diambil Alih 100% Organik (Save Budget)',
+    status: 'ANTI_CANNIBALIZED'
+  },
+  {
+    id: 'st-12',
+    term: 'fasad laser cutting acp seven',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'buyer',
+    intent: '🔥 Arsitek & Kontraktor Gedung',
+    clicks: 5,
+    cost: 'Rp 45.000',
+    avgCpc: 'Rp 9.000',
+    conversions: '2 Lead WA',
+    action: 'Targeted di jasalasercutting.com/jasa-cnc-router',
+    status: 'ACTIVE_ORGANIC'
+  },
+
+  // 2. Negative Search Terms (Blocked by Rian - Anti-Boncos Shield)
+  {
+    id: 'st-13',
+    term: 'download motif laser cutting gratis',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'negative',
+    intent: '🚫 Zero Intent (Pencari Gratisan)',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 54.000)',
+    avgCpc: 'Rp 4.500',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
+  },
+  {
+    id: 'st-14',
+    term: 'file dxf laser cutting free',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'negative',
+    intent: '🚫 Zero Intent (Drafter/Mahasiswa)',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 40.500)',
+    avgCpc: 'Rp 4.500',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
+  },
+  {
+    id: 'st-15',
+    term: 'harga mesin laser cutting fiber bekas',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'negative',
+    intent: '🚫 Non-Buyer (Cari Jual Beli Mesin)',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 72.000)',
+    avgCpc: 'Rp 6.000',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
+  },
+  {
+    id: 'st-16',
+    term: 'lowongan operator mesin laser cutting',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'negative',
+    intent: '🚫 Non-Buyer (Pencari Kerja/Loker)',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 36.000)',
+    avgCpc: 'Rp 4.500',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
+  },
+  {
+    id: 'st-17',
+    term: 'cara membuat pagar laser cutting sendiri',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'negative',
+    intent: '🚫 DIY Tutorial / Pelajar',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 27.000)',
+    avgCpc: 'Rp 4.500',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
+  },
+  {
+    id: 'st-18',
+    term: 'gantungan kunci akrilik 1 pcs',
+    campaign: 'Jasa Laser Cutting Akrilik',
+    category: 'negative',
+    intent: '🚫 Eceran Receh (Low Ticket / Bouncing)',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 45.000)',
+    avgCpc: 'Rp 4.500',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
+  },
+  {
+    id: 'st-19',
+    term: 'jual mesin laser bodor second olx',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'negative',
+    intent: '🚫 Jual Beli Mesin Second',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 63.000)',
+    avgCpc: 'Rp 7.000',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
+  },
+  {
+    id: 'st-20',
+    term: 'skripsi analisis kekuatan laser fiber',
+    campaign: 'AI - Jasa Laser Cutting Metal',
+    category: 'negative',
+    intent: '🚫 Akademik / Mahasiswa',
+    clicks: 0,
+    cost: 'Rp 0 (Saved Rp 31.500)',
+    avgCpc: 'Rp 4.500',
+    conversions: '0 (100% Boncos)',
+    action: 'BLOKIR NEGATIVE KEYWORD EXACT & PHRASE',
+    status: 'BLOCKED_NEGATIVE'
   }
 ];
 

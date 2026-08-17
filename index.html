@@ -270,6 +270,40 @@
             </div>
           </div>
         </div>
+
+        <!-- NEW: Google Ads Search Terms & Negative Keyword Vault -->
+        <div class="kpi-panel searchterms-panel" style="margin-top: 16px;">
+          <div class="panel-header" style="flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3>🎯 GOOGLE ADS SEARCH TERMS & NEGATIVE KEYWORD SHIELD VAULT</h3>
+              <span class="panel-subtitle" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">
+                Data riil query pencarian Google Ads, konversi lead WA, & pembasmian 1.909 keyword boncos
+              </span>
+            </div>
+            <div class="searchterms-filters" style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button id="btn-st-all" class="fleet-btn active" style="font-size: 10px; padding: 6px 10px;" onclick="filterSearchTerms('all')">SEMUA QUERY</button>
+              <button id="btn-st-buyer" class="fleet-btn" style="font-size: 10px; padding: 6px 10px;" onclick="filterSearchTerms('buyer')">🔥 HIGH-INTENT BUYER</button>
+              <button id="btn-st-location" class="fleet-btn" style="font-size: 10px; padding: 6px 10px;" onclick="filterSearchTerms('location')">📍 BINTARO & BSD</button>
+              <button id="btn-st-negative" class="fleet-btn" style="font-size: 10px; padding: 6px 10px;" onclick="filterSearchTerms('negative')">🛡️ NEGATIVE TERBLOKIR</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="kpi-table">
+              <thead>
+                <tr>
+                  <th>SEARCH TERM / QUERY GOOGLE</th>
+                  <th>SUMBER CAMPAIGN ADS</th>
+                  <th>INTENT & KATEGORI</th>
+                  <th>BIAYA & CLICKS</th>
+                  <th>STATUS & TINDAKAN SWARM</th>
+                </tr>
+              </thead>
+              <tbody id="kpi-searchterms-tbody">
+                <!-- Injected via kpi.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- Live Telemetry & Event Stream Sidebar -->
