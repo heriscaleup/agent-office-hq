@@ -1,0 +1,48 @@
+name: Deploy Swarm HQ to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST || '163.61.44.41' }}
+          username: ${{ secrets.VPS_USERNAME || 'root' }}
+          password: ${{ secrets.VPS_PASSWORD || '420IXRPVbx''' }}
+          port: 22
+          script: |
+            echo "🚀 [CI/CD] Starting Deployment to /opt/agent-office-hq..."
+            
+            # Ensure target directory exists
+            mkdir -p /opt/agent-office-hq
+            cd /opt/agent-office-hq
+            
+            # If git repo already initialized, pull latest; otherwise clone/fetch
+            if [ -d ".git" ]; then
+              git fetch --all
+              git reset --hard origin/main
+              git pull origin main
+            else
+              git clone https://github.com/${{ github.repository }}.git /tmp/agent-hq-clone
+              cp -rf /tmp/agent-hq-clone/* /opt/agent-office-hq/
+              cp -rf /tmp/agent-hq-clone/.git /opt/agent-office-hq/
+              rm -rf /tmp/agent-hq-clone
+            fi
+
+            # Restart Docker Container
+            echo "🔄 [CI/CD] Restarting Docker container agent-office-hq..."
+            docker restart agent-office-hq || docker run -d --name agent-office-hq --restart always --network coolify -v /opt/agent-office-hq:/app -w /app node:20-alpine node server.mjs
+            
+            echo "✅ [CI/CD] Deployment completed successfully! Live on https://seo.tepatlaser.com"

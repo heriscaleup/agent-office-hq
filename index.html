@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TepatLaser AI Swarm HQ — Pixel Office, GA4 & GEO Intelligence Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-night">
+  <!-- Cyberpunk Security Auth Gate Screen -->
+  <div id="auth-gate-overlay" class="auth-overlay">
+    <div class="auth-terminal-card">
+      <div class="auth-header">
+        <span class="auth-icon">🛡️</span>
+        <div>
+          <h2 class="auth-title">TEPATLASER SWARM HQ</h2>
+          <span class="auth-subtitle font-mono">LEVEL-4 CLASSIFIED ACCESS GATE</span>
+        </div>
+      </div>
+      <div class="auth-body">
+        <div class="auth-status-bar">
+          <span class="pulse-dot"></span>
+          <span class="status-text font-mono">ENCRYPTED PROTOCOL // PASSCODE REQUIRED</span>
+        </div>
+        <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+          <label class="auth-label font-mono" for="auth-passcode">ENTER MASTER ACCESS KEY:</label>
+          <div class="auth-input-wrapper">
+            <input type="password" id="auth-passcode" class="auth-input font-mono" placeholder="••••••••" autocomplete="current-password" autofocus required />
+            <button type="submit" id="btn-auth-submit" class="btn-pixel-primary">UNLOCK</button>
+          </div>
+          <div id="auth-error-msg" class="auth-error font-mono hidden">❌ ACCESS DENIED: INVALID PASSCODE</div>
+        </form>
+        <div class="auth-footer-info font-mono">
+          <span>TARGET: VPS 163.61.44.41 // TRAEFIK HTTPS GATEWAY</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app">
+    <!-- Top Cyberpunk Status Bar -->
+    <header class="cyber-header">
+      <div class="brand">
+        <span class="pixel-indicator pulse"></span>
+        <span class="pixel-title">TEPATLASER AI SWARM HQ</span>
+        <span class="badge-vps">VPS 163.61.44.41: ONLINE</span>
+        <span class="badge-geo">GEO CHATGPT READY</span>
+      </div>
+
+      <!-- View Navigation Tabs -->
+      <div class="view-tabs">
+        <button id="tab-office" class="tab-btn active" onclick="switchView('office')">
+          <span>🏢</span> VIRTUAL OFFICE
+        </button>
+        <button id="tab-kpi" class="tab-btn" onclick="switchView('kpi')">
+          <span>📊</span> EXECUTIVE KPI & GEO ROOM
+        </button>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="label">GA4 PROPERTIES:</span>
+          <span class="value text-green">3 SYNCED</span>
+        </div>
+        <div class="stat-item">
+          <span class="label">GEO VISIBILITY:</span>
+          <span class="value text-cyan">94%</span>
+        </div>
+        <div class="stat-item">
+          <span class="label">PAGES LIVE:</span>
+          <span class="value text-yellow" id="header-live-pages">107</span>
+        </div>
+        <div class="header-controls">
+          <button id="btn-sound" class="btn-pixel-small" title="Toggle 8-Bit Audio">🔊 FX ON</button>
+          <button id="btn-theme" class="btn-pixel-small" title="Toggle Night/Day Mode">🌙 NIGHT</button>
+          <button id="btn-lock" class="btn-pixel-small" onclick="lockTerminal()" title="Lock Terminal Screen">🔒 LOCK</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="workspace-container">
+      <!-- 1. Office Viewport Section -->
+      <section id="view-office-section" class="viewport-section">
+        <div class="canvas-wrapper">
+          <canvas id="officeCanvas" width="960" height="540"></canvas>
+          
+          <!-- Interactive Quick Tooltip HUD -->
+          <div id="agent-hover-card" class="hover-card hidden">
+            <div class="card-header">
+              <span class="card-avatar" id="hover-avatar">👩‍💼</span>
+              <div>
+                <h4 id="hover-name">Agent Name</h4>
+                <span class="badge-status" id="hover-status">WORKING</span>
+              </div>
+            </div>
+            <p class="card-task" id="hover-task">Analyzing keyword data...</p>
+            <span class="hint-text">Klik untuk detail & trigger misi</span>
+          </div>
+        </div>
+
+        <!-- Quick Command Toolbar -->
+        <div class="command-toolbar">
+          <button class="cmd-btn" onclick="triggerAction('blog')">
+            <span class="icon">✍️</span>
+            <span>PUBLISH BLOG ARTICLE</span>
+          </button>
+          <button class="cmd-btn" onclick="triggerAction('rank')">
+            <span class="icon">📊</span>
+            <span>AUDIT GOOGLE SERP</span>
+          </button>
+          <button class="cmd-btn" onclick="triggerAction('geo')">
+            <span class="icon">🤖</span>
+            <span>SCAN AI SEARCH (GEO)</span>
+          </button>
+          <button class="cmd-btn" onclick="triggerAction('leads')">
+            <span class="icon">📱</span>
+            <span>FETCH LEADS DB</span>
+          </button>
+          <button class="cmd-btn" onclick="triggerAction('vps')">
+            <span class="icon">🖥️</span>
+            <span>VPS HEALTH CHECK</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. Executive KPI Center Section (Hidden by default) -->
+      <section id="view-kpi-section" class="kpi-section hidden">
+        
+        <!-- Multi-Domain Fleet Filter Controller -->
+        <div class="domain-fleet-bar">
+          <div class="fleet-title-wrap">
+            <span class="fleet-label">🌐 PILIH ARMADA DOMAIN:</span>
+            <span class="fleet-subtitle">Klik domain untuk filter metrik spesifik atau pantau seluruh armada</span>
+          </div>
+          <div class="fleet-buttons-group">
+            <button id="btn-fleet-all" class="fleet-btn active" onclick="filterFleet('all')">
+              <span>👑</span> SEMUA ARMADA (TRI-FORCE)
+            </button>
+            <button id="btn-fleet-tepatlaser" class="fleet-btn" onclick="filterFleet('tepatlaser')">
+              <span>🥇</span> TEPATLASER.COM
+            </button>
+            <button id="btn-fleet-rajacutting" class="fleet-btn" onclick="filterFleet('rajacutting')">
+              <span>🥈</span> RAJACUTTINGLASER.COM
+            </button>
+            <button id="btn-fleet-jasalasercutting" class="fleet-btn" onclick="filterFleet('jasalasercutting')">
+              <span>🥉</span> JASALASERCUTTING.COM
+            </button>
+          </div>
+        </div>
+
+        <!-- Top KPI Cards Overview -->
+        <div class="kpi-cards-grid">
+          <div class="kpi-card card-savings">
+            <div class="card-top">
+              <span class="kpi-icon">💰</span>
+              <span class="badge-kpi success">KPI: TERCAPAI</span>
+            </div>
+            <h4 class="kpi-title">ESTIMASI HEMAT GOOGLE ADS</h4>
+            <div class="kpi-value text-green">Rp 3.420.000<span class="kpi-sub">/minggu</span></div>
+            <p class="kpi-desc">Dihitung dari 760 klik organik x CPC rata-rata Rp 4.500</p>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-green" style="width: 92%"></div>
+            </div>
+            <span class="progress-label">Target: Rp 3.000.000 / minggu (114%)</span>
+          </div>
+
+          <div class="kpi-card card-serp">
+            <div class="card-top">
+              <span class="kpi-icon">🤖</span>
+              <span class="badge-kpi success">GEO ENGINE READY</span>
+            </div>
+            <h4 class="kpi-title">AI SEARCH VISIBILITY (GEO)</h4>
+            <div class="kpi-value text-cyan">94% <span class="kpi-sub">Citation Score</span></div>
+            <p class="kpi-desc">ChatGPT SearchBot, Perplexity & Gemini llms.txt Verified</p>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-cyan" style="width: 94%"></div>
+            </div>
+            <span class="progress-label">Fact Density: 12kW, ±0.02mm, Nitrogen Guard</span>
+          </div>
+
+          <div class="kpi-card card-leads">
+            <div class="card-top">
+              <span class="kpi-icon">📱</span>
+              <span class="badge-kpi success">GA4 CONVERSIONS</span>
+            </div>
+            <h4 class="kpi-title">WHATSAPP LEADS CAPTURED</h4>
+            <div class="kpi-value text-yellow">24 Leads <span class="kpi-sub">/minggu</span></div>
+            <p class="kpi-desc">Top Wilayah: Bintaro (38%), BSD (29%), Jaksel (17%)</p>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-yellow" style="width: 80%"></div>
+            </div>
+            <span class="progress-label">GA4 Event: generate_lead / wa_click</span>
+          </div>
+
+          <div class="kpi-card card-shield">
+            <div class="card-top">
+              <span class="kpi-icon">🛡️</span>
+              <span class="badge-kpi alert">BONCOS KILLER</span>
+            </div>
+            <h4 class="kpi-title">KEYWORD BONCOS TERBLOKIR</h4>
+            <div class="kpi-value text-magenta">1.909 <span class="kpi-sub">Search Terms</span></div>
+            <p class="kpi-desc">Diambil alih 100% oleh 107 Halaman SEO Organik</p>
+            <div class="kpi-progress-bar">
+              <div class="progress-fill fill-magenta" style="width: 100%"></div>
+            </div>
+            <span class="progress-label">Zero ad cannibalization active</span>
+          </div>
+        </div>
+
+        <!-- NEW: GA4 Multi-Domain Fleet Telemetry -->
+        <div class="kpi-panel ga4-panel">
+          <div class="panel-header">
+            <h3>📈 GOOGLE ANALYTICS 4 (GA4) MULTI-DOMAIN FLEET TELEMETRY</h3>
+            <span class="badge-vps">3 PROPERTIES CONNECTED</span>
+          </div>
+          <div class="ga4-grid" id="ga4-properties-grid">
+            <!-- Injected via kpi.js -->
+          </div>
+        </div>
+
+        <!-- NEW: GEO AI Search Visibility Radar -->
+        <div class="kpi-panel geo-panel">
+          <div class="panel-header">
+            <h3>🤖 GENERATIVE ENGINE OPTIMIZATION (GEO) — AI SEARCH RADAR</h3>
+            <span class="badge-live">LLMS.TXT ACTIVATED</span>
+          </div>
+          <div class="geo-grid" id="geo-radar-grid">
+            <!-- Injected via kpi.js -->
+          </div>
+        </div>
+
+        <!-- Middle Row: Ranking Table & Team Scorecard -->
+        <div class="kpi-detail-grid">
+          <!-- Live SERP Rank Leaderboard -->
+          <div class="kpi-panel">
+            <div class="panel-header">
+              <h3>🏆 LIVE GOOGLE SERP RANK LEADERBOARD</h3>
+              <button class="btn-pixel-small" onclick="triggerAction('rank')">🔄 RE-SCAN SERP</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="kpi-table">
+                <thead>
+                  <tr>
+                    <th>KEYWORD TARGET</th>
+                    <th>TARGET WILAYAH</th>
+                    <th>POSISI GOOGLE</th>
+                    <th>PERGERAKAN</th>
+                    <th>STATUS KPI</th>
+                  </tr>
+                </thead>
+                <tbody id="kpi-serp-tbody">
+                  <!-- Injected via kpi.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- AI Staff Productivity Scorecard -->
+          <div class="kpi-panel">
+            <div class="panel-header">
+              <h3>👥 RAPOR PERFORMA TIM KARYAWAN AI</h3>
+              <span class="badge-vps">ALL GREEN</span>
+            </div>
+            <div class="staff-scorecard-list" id="kpi-staff-list">
+              <!-- Injected via kpi.js -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Telemetry & Event Stream Sidebar -->
+      <aside class="sidebar-section">
+        <div class="sidebar-header">
+          <h3>⚡ LIVE TELEMETRY STREAM</h3>
+          <span class="badge-live">LIVE FEED</span>
+        </div>
+
+        <div class="event-log" id="eventLog">
+          <!-- Live events injected here -->
+        </div>
+
+        <!-- Agent Swarm Roster Overview -->
+        <div class="roster-panel">
+          <h4>🤖 TIM KARYAWAN AI</h4>
+          <div class="roster-grid" id="rosterGrid">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Agent Detail & Interrogation Modal -->
+    <div id="agent-modal" class="modal-overlay hidden">
+      <div class="modal-card" style="max-width: 680px;">
+        <div class="modal-header">
+          <div class="header-left">
+            <span class="modal-avatar" id="modal-avatar">👩‍💼</span>
+            <div>
+              <h3 id="modal-title">AGENT PROFILE</h3>
+              <span class="modal-role" id="modal-role">Role Description</span>
+            </div>
+          </div>
+          <button class="btn-close" onclick="closeModal()">✕</button>
+        </div>
+
+        <!-- Modal Sub-Tabs -->
+        <div class="modal-tabs">
+          <button id="modal-tab-chat" class="modal-tab-btn active" onclick="switchModalTab('chat')">
+            💬 INTEROGASI LANGSUNG (LIVE CHAT)
+          </button>
+          <button id="modal-tab-profile" class="modal-tab-btn" onclick="switchModalTab('profile')">
+            📋 PROFIL & METRIK MISI
+          </button>
+        </div>
+
+        <!-- Tab 1: Live Chat & Interrogation -->
+        <div id="modal-section-chat" class="modal-body-chat">
+          <div class="chat-terminal" id="agent-chat-box">
+            <!-- Messages injected here -->
+          </div>
+
+          <!-- Quick Interrogation Prompts Chips -->
+          <div class="quick-prompts-wrapper">
+            <span class="quick-prompts-label">⚡ PROMPT CEPAT INTEROGASI:</span>
+            <div class="quick-prompts-chips" id="agent-quick-prompts">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- Chat Input Form -->
+          <form class="chat-input-bar" onsubmit="handleSendAgentMessage(event)">
+            <input type="text" id="agent-chat-input" class="chat-input font-mono" placeholder="Ketik pertanyaan / interogasi data..." autocomplete="off" required />
+            <button type="submit" id="btn-agent-send" class="btn-pixel-primary">KIRIM ⚡</button>
+          </form>
+        </div>
+
+        <!-- Tab 2: Profile & Execution Log -->
+        <div id="modal-section-profile" class="modal-body hidden">
+          <div class="modal-field">
+            <label>CORE ENGINE:</label>
+            <span id="modal-engine" class="text-cyan">Claude 3.5 Sonnet + Astro Engine</span>
+          </div>
+          <div class="modal-field">
+            <label>CURRENT ASSIGNED MISSION:</label>
+            <p id="modal-mission" class="text-white">Auto-writing E-E-A-T article</p>
+          </div>
+          <div class="modal-field">
+            <label>TARGET SILO / LOCATION:</label>
+            <span id="modal-target" class="text-yellow">Bintaro, BSD, Tangsel Hub</span>
+          </div>
+          <div class="modal-field">
+            <label>LAST EXECUTION LOG:</label>
+            <pre id="modal-log" class="code-box">Log output...</pre>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="modal-action-btn" class="btn-pixel-primary" onclick="executeModalAgentAction()">⚡ FORCE RUN AGENT</button>
+          <button class="btn-pixel-secondary" onclick="closeModal()">TUTUP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Competitor Intelligence Battle Modal -->
+    <div id="competitor-modal" class="modal-overlay hidden">
+      <div class="modal-card" style="max-width: 620px;">
+        <div class="modal-header">
+          <div class="header-left">
+            <span class="modal-avatar">⚔️</span>
+            <div>
+              <h3 id="comp-modal-keyword">KEYWORD BATTLE INTELLIGENCE</h3>
+              <span class="modal-role" id="comp-modal-domain">Domain Target: tepatlaser.com</span>
+            </div>
+          </div>
+          <button class="btn-close" onclick="closeCompetitorModal()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-field">
+            <label>POSISI ORGANIK KITA SAAT INI:</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+              <span id="comp-modal-rank" class="rank-badge gold">#4</span>
+              <span id="comp-modal-trend" class="text-cyan font-mono font-bold">Trend</span>
+              <span id="comp-modal-status" class="badge-status-pill success">Status</span>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label>PENGUASA RANKING 1-5 GOOGLE PAGE 1 (REAL COMPETITORS):</label>
+            <div class="competitors-list" id="comp-modal-list">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label>TAKTIK OPERASIONAL SERANGAN (ACTION PLAN):</label>
+            <div class="action-plan-box" id="comp-modal-action">
+              Loading battle strategy...
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-pixel-primary" onclick="triggerAction('rank')">🔄 RE-SCAN LIVE SERP</button>
+          <button class="btn-pixel-secondary" onclick="closeCompetitorModal()">TUTUP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="agents.js"></script>
+  <script src="office.js"></script>
+  <script src="kpi.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
