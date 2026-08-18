@@ -46,6 +46,54 @@ http://localhost:3333
 
 ---
 
+## 📈 Setup Google Search Console (Live SERP Data)
+
+The KPI dashboard's keyword ranking data (`/api/serp-audit`) is fetched live from the
+**Google Search Console API** — no fake/hardcoded numbers. Competitor benchmarking
+(who ranks #1/#2/#3 above us) is **not** available through this API, so that part
+stays a manually-curated list until a paid SERP API is added.
+
+Without setup, the dashboard runs fine but shows `"Belum Pernah Diaudit"` / no data —
+it will never silently show made-up rankings.
+
+### 1. Create a GCP service account
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → create or select a project.
+2. Enable the **Search Console API**: *APIs & Services → Library → search "Search Console API" → Enable*.
+3. Create a service account: *IAM & Admin → Service Accounts → Create Service Account* (any name, e.g. `serp-reader`). No project role needed.
+4. Open the service account → *Keys → Add Key → Create new key → JSON*. This downloads a `.json` key file — **keep it private, never commit it to git**.
+
+### 2. Grant the service account access to each property
+
+For **each** of the 3 domains (`tepatlaser.com`, `rajacuttinglaser.com`, `jasalasercutting.com`):
+
+1. Open [Google Search Console](https://search.google.com/search-console) → select the property.
+2. *Settings → Users and permissions → Add user*.
+3. Paste the service account's `client_email` (found in the downloaded JSON, looks like `serp-reader@your-project.iam.gserviceaccount.com`).
+4. Permission level: **Restricted** (read-only) is enough.
+
+### 3. Configure the server
+
+Set these environment variables where the server runs (locally in `.env`, or in Coolify's environment settings for production):
+
+| Variable | Required | Description |
+|---|---|---|
+| `GSC_SERVICE_ACCOUNT_JSON` | Yes | The **entire contents** of the downloaded JSON key file, as a single-line string. |
+| `GSC_SITE_TEPATLASER` | No | Override the Search Console property URL for tepatlaser.com. Defaults to `https://tepatlaser.com/`. Use `sc-domain:tepatlaser.com` instead if it's verified as a Domain property. |
+| `GSC_SITE_RAJACUTTING` | No | Same, defaults to `https://rajacuttinglaser.com/`. |
+| `GSC_SITE_JASALASERCUTTING` | No | Same, defaults to `https://jasalasercutting.com/`. |
+| `GSC_REFRESH_INTERVAL_HOURS` | No | How often the server re-queries Search Console. Defaults to `12`. |
+
+Once `GSC_SERVICE_ACCOUNT_JSON` is set, the server refreshes rankings automatically on
+startup and every `GSC_REFRESH_INTERVAL_HOURS` — see the console log for
+`✅ [SERP] Search Console refresh done` or `❌ [SERP] Search Console refresh failed`.
+
+Note: Search Console data lags real-time by ~2-3 days, and a keyword only returns a
+position if it had at least one impression in the trailing 28-day window — a brand
+new page can legitimately show "Belum Ada Data" for a while, that's expected.
+
+---
+
 ## 🔒 Security & Authorization
 
 - All `/api/*` endpoints require `Authorization: Bearer <HMAC_TOKEN>` or valid `hq_session_token` cookie.

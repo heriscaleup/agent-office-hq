@@ -1,18 +1,47 @@
 // Live SERP Auditor, Competitor Intelligence & Google Ads Search Terms Vault
+//
+// Ranking data (position/clicks/impressions) is fetched live from the Google
+// Search Console API — see search_console.mjs and README.md "Setup Google
+// Search Console". It is cached to disk and refreshed on a schedule (see
+// server.mjs) so requests don't hit the GSC API directly.
+//
+// Competitor benchmarking (who ranks #1/#2/#3 above us) is NOT available via
+// Search Console — Google does not expose competitors' rankings through this
+// API. That intel below is manually curated and stays static until a paid
+// SERP API (e.g. DataForSEO) is wired in.
 
-export const KEYWORDS_AUDIT_DATA = [
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { queryKeywordPosition, isConfigured as isGscConfigured } from './search_console.mjs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const CACHE_DIR = path.join(__dirname, 'data');
+const CACHE_PATH = path.join(CACHE_DIR, 'serp-cache.json');
+
+// Search Console property URL per domain (must match exactly how the property
+// is verified in Search Console: a URL-prefix like "https://example.com/" or
+// a domain property like "sc-domain:example.com"). Overridable via env var.
+const SITE_MAP = {
+  tepatlaser: process.env.GSC_SITE_TEPATLASER || 'https://tepatlaser.com/',
+  rajacutting: process.env.GSC_SITE_RAJACUTTING || 'https://rajacuttinglaser.com/',
+  jasalasercutting: process.env.GSC_SITE_JASALASERCUTTING || 'https://jasalasercutting.com/'
+};
+
+const DOMAIN_NAMES = {
+  tepatlaser: 'tepatlaser.com',
+  rajacutting: 'rajacuttinglaser.com',
+  jasalasercutting: 'jasalasercutting.com'
+};
+
+// Static metadata + manually-curated competitor intel per tracked keyword.
+export const KEYWORD_TARGETS = [
   {
     id: 'kw-1',
     domainKey: 'tepatlaser',
-    domainName: 'tepatlaser.com',
     keyword: 'jasa laser cutting bintaro',
     location: 'Bintaro Sektor 1-9',
     url: '/jasa-laser-cutting-bintaro/',
-    position: 'Indexing / Page 2',
-    rankNumber: 14,
-    trend: '🚀 Exact Match Armed',
-    status: '⚔️ Target Menggusur: Raja Laser (#1) & Kingsign (#2)',
-    statusType: 'warning',
     topCompetitor: 'rajalasercutting.com',
     competitorsPage1: [
       { rank: 1, name: 'Raja Laser Cutting (rajalasercutting.com)', strength: 'Authority domain lama, kantor di BSD/Parigi' },
@@ -26,15 +55,9 @@ export const KEYWORDS_AUDIT_DATA = [
   {
     id: 'kw-2',
     domainKey: 'tepatlaser',
-    domainName: 'tepatlaser.com',
     keyword: 'laser cutting bsd serpong',
     location: 'BSD & Gading Serpong',
     url: '/jasa-laser-cutting-bsd/',
-    position: 'Indexing / Page 2',
-    rankNumber: 16,
-    trend: '🚀 Exact Match Armed',
-    status: '⚔️ Target Menggusur: lytro.id (#1) & sobatlaser (#2)',
-    statusType: 'warning',
     topCompetitor: 'lytro.id',
     competitorsPage1: [
       { rank: 1, name: 'Lytro Laser (lytro.id)', strength: 'SEO Page 1 BSD & Serpong' },
@@ -46,15 +69,9 @@ export const KEYWORDS_AUDIT_DATA = [
   {
     id: 'kw-3',
     domainKey: 'tepatlaser',
-    domainName: 'tepatlaser.com',
     keyword: 'harga laser cutting per meter',
     location: 'Jabodetabek Wide',
     url: '/harga-laser-cutting-per-meter/',
-    position: 'Indexing / Page 2',
-    rankNumber: 18,
-    trend: '⏳ Crawling Google',
-    status: '⚔️ Target Menggusur: tritunggalmetal.com (#1)',
-    statusType: 'warning',
     topCompetitor: 'tritunggalmetal.com',
     competitorsPage1: [
       { rank: 1, name: 'Tritunggal Metal (tritunggalmetal.com)', strength: 'Tabel harga komprehensif' },
@@ -65,15 +82,9 @@ export const KEYWORDS_AUDIT_DATA = [
   {
     id: 'kw-4',
     domainKey: 'rajacutting',
-    domainName: 'rajacuttinglaser.com',
     keyword: 'pagar laser cutting mewah',
     location: 'Jabodetabek Residensial',
     url: '/produk/pagar-laser-cutting/',
-    position: 'Top 3 (Page 1)',
-    rankNumber: 3,
-    trend: '🔺 +3 Naek',
-    status: '💎 PODIUM HALAMAN 1',
-    statusType: 'success',
     topCompetitor: 'pagarlaser.com',
     competitorsPage1: [
       { rank: 1, name: 'Pagar Laser Jakarta (pagarlaser.com)', strength: 'Portofolio rumah mewah PIK & Pondok Indah' },
@@ -85,15 +96,9 @@ export const KEYWORDS_AUDIT_DATA = [
   {
     id: 'kw-5',
     domainKey: 'rajacutting',
-    domainName: 'rajacuttinglaser.com',
     keyword: 'mihrab masjid laser cutting',
     location: 'Nasional / DKM Masjid',
     url: '/produk/mihrab-panel-islami/',
-    position: 'Top 1 (Page 1)',
-    rankNumber: 1,
-    trend: '👑 Juara 1 Google',
-    status: '👑 DOMINASI RANK #1 NASIONAL',
-    statusType: 'success',
     topCompetitor: 'rajacuttinglaser.com (KITA)',
     competitorsPage1: [
       { rank: 1, name: 'RajaCuttingLaser.com (KITA)', strength: 'Pionir ornamen kaligrafi & mihrab masjid GRC/Kuningan' },
@@ -104,15 +109,9 @@ export const KEYWORDS_AUDIT_DATA = [
   {
     id: 'kw-6',
     domainKey: 'jasalasercutting',
-    domainName: 'jasalasercutting.com',
     keyword: 'jasa laser cutting plat besi',
     location: 'Banten & Jabodetabek',
     url: '/jasa-laser-fiber',
-    position: 'Top 4 (Page 1)',
-    rankNumber: 4,
-    trend: '🔺 +2 Naek (EMD Power)',
-    status: '⚔️ Target Menggusur: anugerahmetal.com (#1)',
-    statusType: 'success',
     topCompetitor: 'anugerahmetal.com',
     competitorsPage1: [
       { rank: 1, name: 'PT Metal Anugerah Suksestama (anugerahmetal.com)', strength: 'Pabrikan besar, otoritas tinggi industri' },
@@ -125,15 +124,9 @@ export const KEYWORDS_AUDIT_DATA = [
   {
     id: 'kw-7',
     domainKey: 'jasalasercutting',
-    domainName: 'jasalasercutting.com',
     keyword: 'jasa cnc router acp fasad',
     location: 'Industri & Gedung',
     url: '/jasa-cnc-router',
-    position: 'Top 3 (Page 1)',
-    rankNumber: 3,
-    trend: '🔺 +2 Naek',
-    status: '💎 PODIUM HALAMAN 1',
-    statusType: 'success',
     topCompetitor: 'daniada.com',
     competitorsPage1: [
       { rank: 1, name: 'Dania Da (daniada.com)', strength: 'Vendor fasad gedung & ACP Seven' },
@@ -145,15 +138,9 @@ export const KEYWORDS_AUDIT_DATA = [
   {
     id: 'kw-8',
     domainKey: 'jasalasercutting',
-    domainName: 'jasalasercutting.com',
     keyword: 'jasa potong plat besi tebal tangerang',
     location: 'Banten Industrial',
     url: '/jasa-laser-fiber',
-    position: 'Top 2 (Page 1)',
-    rankNumber: 2,
-    trend: '🔺 +3 Naek',
-    status: '💎 PODIUM TOP 2 BANTEN',
-    statusType: 'success',
     topCompetitor: 'anugerahmetal.com',
     competitorsPage1: [
       { rank: 1, name: 'PT Metal Anugerah (anugerahmetal.com)', strength: 'Kapasitas tonase pabrik' },
@@ -164,6 +151,7 @@ export const KEYWORDS_AUDIT_DATA = [
 ];
 
 // Raw Real Google Ads Search Terms Intelligence & Negative Defense Vault
+// (Google Ads reporting — out of scope for the GSC live-data work; still static.)
 export const SEARCH_TERMS_VAULT_DATA = [
   // 1. High Intent Buyer Search Terms (Converted to Organic Silos)
   {
@@ -430,18 +418,144 @@ export const SEARCH_TERMS_VAULT_DATA = [
   }
 ];
 
+// ---- Live GSC cache -------------------------------------------------------
+
+let cache = { lastAuditTimestamp: null, results: {} };
+
+function loadCache() {
+  try {
+    cache = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
+  } catch {
+    // No cache on disk yet (first run) — keep defaults.
+  }
+}
+loadCache();
+
+function saveCache() {
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+  fs.writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2));
+}
+
+/**
+ * Queries Google Search Console for every tracked keyword and persists the
+ * result to disk. Called on a schedule from server.mjs. Never throws — a
+ * failed keyword is recorded with its error message so the dashboard can
+ * show it plainly instead of silently falling back to fake numbers.
+ */
+export async function refreshSerpData() {
+  if (!isGscConfigured()) {
+    throw new Error('GSC_SERVICE_ACCOUNT_JSON is not configured — see README.md "Setup Google Search Console"');
+  }
+
+  const previousResults = cache.results || {};
+  const results = {};
+
+  for (const kw of KEYWORD_TARGETS) {
+    const siteUrl = SITE_MAP[kw.domainKey];
+    try {
+      const live = await queryKeywordPosition(siteUrl, kw.keyword);
+      const previous = previousResults[kw.id];
+      const previousPosition = previous && previous.found ? previous.position : null;
+      results[kw.id] = {
+        ...live,
+        previousPosition,
+        error: null,
+        checkedAt: new Date().toISOString()
+      };
+    } catch (e) {
+      results[kw.id] = {
+        found: false,
+        position: null,
+        clicks: 0,
+        impressions: 0,
+        ctr: 0,
+        previousPosition: null,
+        error: e.message,
+        checkedAt: new Date().toISOString()
+      };
+    }
+  }
+
+  cache = { lastAuditTimestamp: new Date().toISOString(), results };
+  saveCache();
+  return cache;
+}
+
+function describeTrend(live) {
+  if (!live) return '⏳ Belum pernah diaudit';
+  if (live.error) return '⚠️ Gagal fetch GSC';
+  if (!live.found) return '❓ Belum ada impression';
+  if (live.previousPosition == null) return '🆕 Data pertama';
+  const delta = Math.round((live.previousPosition - live.position) * 10) / 10;
+  if (delta > 0.05) return `🔺 +${delta} Naik`;
+  if (delta < -0.05) return `🔻 ${delta} Turun`;
+  return '➖ Stabil';
+}
+
+function describePosition(live) {
+  if (!live) return 'Belum Pernah Diaudit';
+  if (live.error) return `Error: ${live.error}`;
+  if (!live.found) return 'Tidak Ada Impression (28 Hari)';
+  const rounded = Math.round(live.position);
+  if (rounded <= 10) return `Top ${rounded} (Page 1)`;
+  const page = Math.ceil(rounded / 10);
+  return `Page ${page} (Rank ~${rounded})`;
+}
+
+function describeStatus(live) {
+  if (!live) return { status: '⏳ Belum Pernah Diaudit: menunggu jadwal refresh GSC pertama', statusType: 'warning' };
+  if (live.error) return { status: '⚠️ Perlu Perhatian: gagal ambil data GSC', statusType: 'warning' };
+  if (!live.found) return { status: '❓ Belum Ada Data: keyword belum tercatat impression di Search Console 28 hari terakhir', statusType: 'warning' };
+  const rounded = Math.round(live.position);
+  if (rounded === 1) return { status: '👑 DOMINASI RANK #1', statusType: 'success' };
+  if (rounded <= 3) return { status: '💎 PODIUM HALAMAN 1', statusType: 'success' };
+  if (rounded <= 10) return { status: '✅ Halaman 1 Google', statusType: 'success' };
+  return { status: '⚔️ Belum Halaman 1 — perlu optimasi', statusType: 'warning' };
+}
+
+/** Merges static keyword metadata with the latest cached live GSC data. */
+export function getKeywordsData() {
+  return KEYWORD_TARGETS.map((kw) => {
+    const live = cache.results[kw.id] || null;
+    const { status, statusType } = describeStatus(live);
+    return {
+      ...kw,
+      domainName: DOMAIN_NAMES[kw.domainKey],
+      liveData: !!(live && live.found),
+      rankNumber: live && live.found ? live.position : null,
+      clicks: live ? live.clicks : null,
+      impressions: live ? live.impressions : null,
+      ctr: live ? live.ctr : null,
+      lastChecked: live ? live.checkedAt : null,
+      dataError: live ? live.error : null,
+      position: describePosition(live),
+      trend: describeTrend(live),
+      status,
+      statusType
+    };
+  });
+}
+
 export function getAuditSummary() {
-  const total = KEYWORDS_AUDIT_DATA.length;
-  const page1 = KEYWORDS_AUDIT_DATA.filter(k => k.rankNumber <= 10).length;
-  const top3 = KEYWORDS_AUDIT_DATA.filter(k => k.rankNumber <= 3).length;
-  const indexing = KEYWORDS_AUDIT_DATA.filter(k => k.rankNumber > 10).length;
+  const keywords = getKeywordsData();
+  const total = keywords.length;
+  const withData = keywords.filter((k) => k.liveData);
+  const page1 = withData.filter((k) => Math.round(k.rankNumber) <= 10).length;
+  const top3 = withData.filter((k) => Math.round(k.rankNumber) <= 3).length;
+  const noData = total - withData.length;
 
   return {
+    dataSource: isGscConfigured() ? 'Google Search Console API (live)' : 'GSC_NOT_CONFIGURED',
+    configured: isGscConfigured(),
     totalKeywords: total,
     page1Count: page1,
     top3Count: top3,
-    indexingCount: indexing,
-    page1Percentage: Math.round((page1 / total) * 100) + '%',
-    lastAuditTimestamp: new Date().toLocaleTimeString('id-ID') + ' WIB (' + new Date().toLocaleDateString('id-ID') + ')'
+    noDataCount: noData,
+    page1Percentage: total ? Math.round((page1 / total) * 100) + '%' : '0%',
+    lastAuditTimestamp: cache.lastAuditTimestamp
+      ? new Date(cache.lastAuditTimestamp).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB'
+      : 'Belum pernah di-audit'
   };
 }
+
+export { isGscConfigured };

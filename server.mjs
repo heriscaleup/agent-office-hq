@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
-import { KEYWORDS_AUDIT_DATA, SEARCH_TERMS_VAULT_DATA, getAuditSummary } from './serp_auditor.mjs';
+import { SEARCH_TERMS_VAULT_DATA, getAuditSummary, getKeywordsData, refreshSerpData, isGscConfigured } from './serp_auditor.mjs';
 import { processAgentChat, AGENT_KNOWLEDGE } from './agent_brain.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -182,14 +182,14 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // SERP Rank Audit API
+    // SERP Rank Audit API — live data from Google Search Console (see serp_auditor.mjs)
     if (reqPath === '/api/serp-audit') {
       const summary = getAuditSummary();
       const responseData = {
         status: 'success',
         timestamp: summary.lastAuditTimestamp,
         summary: summary,
-        keywords: KEYWORDS_AUDIT_DATA
+        keywords: getKeywordsData()
       };
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(responseData, null, 2));
@@ -249,3 +249,24 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🎮 TepatLaser AI Swarm HQ & Search Terms Vault is live on: http://localhost:${PORT}`);
 });
+
+// Live SERP audit scheduler — periodically refreshes keyword rankings from
+// Google Search Console (see serp_auditor.mjs). Disabled until
+// GSC_SERVICE_ACCOUNT_JSON is set; see README.md "Setup Google Search Console".
+const REFRESH_INTERVAL_HOURS = Number(process.env.GSC_REFRESH_INTERVAL_HOURS) || 12;
+
+async function runSerpRefresh() {
+  try {
+    await refreshSerpData();
+    console.log(`✅ [SERP] Search Console refresh done at ${new Date().toISOString()}`);
+  } catch (e) {
+    console.error(`❌ [SERP] Search Console refresh failed: ${e.message}`);
+  }
+}
+
+if (isGscConfigured()) {
+  runSerpRefresh();
+  setInterval(runSerpRefresh, REFRESH_INTERVAL_HOURS * 60 * 60 * 1000);
+} else {
+  console.warn('⚠️ [SERP] GSC_SERVICE_ACCOUNT_JSON not set — SERP dashboard will show "no data" until configured. See README.md "Setup Google Search Console".');
+}
