@@ -48,8 +48,17 @@ jobs:
               rm -rf /tmp/agent-hq-clone
             fi
 
-            # Restart Docker Container
-            echo "🔄 [CI/CD] Restarting Docker container agent-office-hq..."
-            docker restart agent-office-hq || docker run -d --name agent-office-hq --restart always --network coolify -v /opt/agent-office-hq:/app -w /app node:20-alpine node server.mjs
-            
+            # Recreate Docker container (always, not just on first run) so env
+            # vars below stay in sync with secrets instead of silently drifting
+            # back to source defaults if the container is ever lost.
+            echo "🔄 [CI/CD] Recreating Docker container agent-office-hq..."
+            docker stop agent-office-hq 2>/dev/null || true
+            docker rm agent-office-hq 2>/dev/null || true
+            docker run -d --name agent-office-hq --restart always --network coolify \
+              -v /opt/agent-office-hq:/app -w /app \
+              -e HQ_PASSWORD="${{ secrets.HQ_PASSWORD }}" \
+              -e HQ_AUTH_SECRET="${{ secrets.HQ_AUTH_SECRET }}" \
+              -e GSC_SERVICE_ACCOUNT_JSON="${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}" \
+              node:20-alpine node server.mjs
+
             echo "✅ [CI/CD] Deployment completed successfully! Live on https://seo.tepatlaser.com"
