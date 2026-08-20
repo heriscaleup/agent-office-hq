@@ -60,11 +60,14 @@ jobs:
             echo "🔄 [CI/CD] Recreating Docker container agent-office-hq..."
             docker stop agent-office-hq 2>/dev/null || true
             docker rm agent-office-hq 2>/dev/null || true
+            # No host port is published. Traefik on the Coolify network is the
+            # trusted proxy responsible for sanitizing forwarded IP headers.
             docker run -d --name agent-office-hq --restart always --network coolify \
               -v /opt/agent-office-hq:/app -w /app \
               -e HQ_PASSWORD="${{ secrets.HQ_PASSWORD }}" \
               -e HQ_AUTH_SECRET="${{ secrets.HQ_AUTH_SECRET }}" \
               -e NODE_ENV=production \
+              -e TRUST_PROXY=true \
               -e GSC_SERVICE_ACCOUNT_JSON="${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}" \
               node:20-alpine node server.mjs
 

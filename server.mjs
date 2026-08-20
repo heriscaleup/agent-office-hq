@@ -2,6 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import net from 'net';
 import { fileURLToPath } from 'url';
 import { SEARCH_TERMS_VAULT_DATA, getAuditSummary, getKeywordsData, refreshSerpData, isGscConfigured } from './serp_auditor.mjs';
 import { processAgentChat, AGENT_KNOWLEDGE } from './agent_brain.mjs';
@@ -42,6 +43,8 @@ const STATIC_FILES = new Map([
 
 const LOGIN_WINDOW_MS = 5 * 60 * 1000;
 const MAX_LOGIN_FAILURES = 5;
+const MAX_TRACKED_LOGIN_IPS = 10000;
+const TRUST_PROXY = process.env.TRUST_PROXY === 'true';
 const loginFailuresByIp = new Map();
 
 // Token utilities
@@ -84,12 +87,51 @@ function verifyToken(token) {
   }
 }
 
+function parseIpHeader(value) {
+  if (typeof value !== 'string') return null;
+  const candidate = value.trim();
+  return net.isIP(candidate) ? candidate : null;
+}
+
 function getClientIp(req) {
+  const socketIp = req.socket.remoteAddress || 'unknown';
+
+  // Forwarded headers are trusted only when an operator explicitly confirms
+  // that a reverse proxy sanitizes/overwrites them before requests reach Node.
+  if (!TRUST_PROXY) return socketIp;
+
+  const realIp = parseIpHeader(req.headers['x-real-ip']);
+  if (realIp) return realIp;
+
   const forwardedFor = req.headers['x-forwarded-for'];
-  if (typeof forwardedFor === 'string' && forwardedFor.trim()) {
-    return forwardedFor.split(',')[0].trim();
+  if (typeof forwardedFor === 'string') {
+    const firstForwardedIp = parseIpHeader(forwardedFor.split(',')[0]);
+    if (firstForwardedIp) return firstForwardedIp;
   }
-  return req.socket.remoteAddress || 'unknown';
+
+  return socketIp;
+}
+
+function cleanupExpiredLoginFailures(now = Date.now()) {
+  for (const [ip, state] of loginFailuresByIp) {
+    if (now - state.windowStartedAt >= LOGIN_WINDOW_MS) {
+      loginFailuresByIp.delete(ip);
+    }
+  }
+}
+
+function evictOldestLoginFailure() {
+  let oldestIp = null;
+  let oldestTimestamp = Infinity;
+
+  for (const [ip, state] of loginFailuresByIp) {
+    if (state.windowStartedAt < oldestTimestamp) {
+      oldestIp = ip;
+      oldestTimestamp = state.windowStartedAt;
+    }
+  }
+
+  if (oldestIp !== null) loginFailuresByIp.delete(oldestIp);
 }
 
 function getLoginFailureState(ip, now = Date.now()) {
@@ -102,11 +144,24 @@ function getLoginFailureState(ip, now = Date.now()) {
 }
 
 function recordLoginFailure(ip, now = Date.now()) {
-  const state = getLoginFailureState(ip, now) || { count: 0, windowStartedAt: now };
+  let state = getLoginFailureState(ip, now);
+
+  if (!state) {
+    if (loginFailuresByIp.size >= MAX_TRACKED_LOGIN_IPS) {
+      cleanupExpiredLoginFailures(now);
+      if (loginFailuresByIp.size >= MAX_TRACKED_LOGIN_IPS) {
+        evictOldestLoginFailure();
+      }
+    }
+    state = { count: 0, windowStartedAt: now };
+  }
+
   state.count += 1;
   loginFailuresByIp.set(ip, state);
   return state;
 }
+
+setInterval(cleanupExpiredLoginFailures, LOGIN_WINDOW_MS).unref();
 
 function getRequestToken(req) {
   // 1. Check Authorization header
@@ -130,22 +185,62 @@ function getRequestToken(req) {
 
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
-    let body = '';
+    const chunks = [];
+    let receivedBytes = 0;
+    let settled = false;
+
+    const rejectOnce = error => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+
     req.on('data', chunk => {
-      body += chunk;
-      if (body.length > 1e6) {
-        req.destroy();
-        reject(new Error('Payload too large'));
+      if (settled) return;
+
+      receivedBytes += chunk.length;
+      if (receivedBytes > 1e6) {
+        const error = new Error('Payload too large');
+        error.code = 'PAYLOAD_TOO_LARGE';
+        rejectOnce(error);
+        req.resume();
+        return;
       }
+
+      chunks.push(chunk);
     });
+
     req.on('end', () => {
+      if (settled) return;
+      settled = true;
+
       try {
+        const body = Buffer.concat(chunks).toString('utf8');
+        // Preserve existing behavior: empty or malformed JSON becomes {}.
         resolve(body ? JSON.parse(body) : {});
-      } catch (e) {
+      } catch {
         resolve({});
       }
     });
+
+    req.on('error', rejectOnce);
+    req.on('aborted', () => {
+      const error = new Error('Request aborted');
+      error.code = 'REQUEST_ABORTED';
+      rejectOnce(error);
+    });
   });
+}
+
+function sendJsonBodyError(res, error) {
+  if (error?.code === 'PAYLOAD_TOO_LARGE') {
+    res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ status: 'error', message: 'PAYLOAD TOO LARGE' }));
+    return;
+  }
+
+  res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({ status: 'error', message: 'INVALID REQUEST BODY' }));
 }
 
 const server = http.createServer(async (req, res) => {
@@ -183,7 +278,13 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    const body = await parseJsonBody(req);
+    let body;
+    try {
+      body = await parseJsonBody(req);
+    } catch (error) {
+      sendJsonBodyError(res, error);
+      return;
+    }
     const passwordInput = typeof body.password === 'string' ? body.password.trim() : '';
 
     if (passwordInput === MASTER_PASSWORD) {
@@ -239,7 +340,13 @@ const server = http.createServer(async (req, res) => {
 
     // Interactive Agent Chat & Interrogation API
     if (reqPath === '/api/agent/chat' && req.method === 'POST') {
-      const body = await parseJsonBody(req);
+      let body;
+      try {
+        body = await parseJsonBody(req);
+      } catch (error) {
+        sendJsonBodyError(res, error);
+        return;
+      }
       const agentId = body.agentId;
       const message = (body.message || '').trim();
       const history = body.history || [];
