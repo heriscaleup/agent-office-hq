@@ -16,9 +16,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify required secrets are configured
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+          HQ_PASSWORD: ${{ secrets.HQ_PASSWORD }}
+          HQ_AUTH_SECRET: ${{ secrets.HQ_AUTH_SECRET }}
         run: |
-          if [ -z "${{ secrets.VPS_HOST }}" ] || [ -z "${{ secrets.VPS_USERNAME }}" ] || [ -z "${{ secrets.VPS_PASSWORD }}" ]; then
-            echo "::error::Missing one or more required secrets (VPS_HOST, VPS_USERNAME, VPS_PASSWORD). Set them in repo Settings > Secrets and variables > Actions."
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USERNAME" ] || [ -z "$VPS_PASSWORD" ] || [ -z "$HQ_PASSWORD" ] || [ -z "$HQ_AUTH_SECRET" ]; then
+            echo "::error::Missing one or more required secrets (VPS_HOST, VPS_USERNAME, VPS_PASSWORD, HQ_PASSWORD, HQ_AUTH_SECRET). Set them in repo Settings > Secrets and variables > Actions."
             exit 1
           fi
 
@@ -58,6 +64,7 @@ jobs:
               -v /opt/agent-office-hq:/app -w /app \
               -e HQ_PASSWORD="${{ secrets.HQ_PASSWORD }}" \
               -e HQ_AUTH_SECRET="${{ secrets.HQ_AUTH_SECRET }}" \
+              -e NODE_ENV=production \
               -e GSC_SERVICE_ACCOUNT_JSON="${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}" \
               node:20-alpine node server.mjs
 

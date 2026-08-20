@@ -11,8 +11,13 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3333;
 const ROOT = __dirname;
-const MASTER_PASSWORD = process.env.HQ_PASSWORD || 'Metr0Land';
-const AUTH_SECRET = process.env.HQ_AUTH_SECRET || 'tepatlaser-ironman-cyber-secret-key-2026';
+const MASTER_PASSWORD = process.env.HQ_PASSWORD;
+const AUTH_SECRET = process.env.HQ_AUTH_SECRET;
+
+if (!MASTER_PASSWORD?.trim() || !AUTH_SECRET?.trim()) {
+  console.error('FATAL: HQ_PASSWORD and HQ_AUTH_SECRET must both be set to non-empty values.');
+  process.exit(1);
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -25,6 +30,20 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml'
 };
 
+const STATIC_FILES = new Map([
+  ['/index.html', 'index.html'],
+  ['/style.css', 'style.css'],
+  ['/app.js', 'app.js'],
+  ['/audio.js', 'audio.js'],
+  ['/agents.js', 'agents.js'],
+  ['/office.js', 'office.js'],
+  ['/kpi.js', 'kpi.js']
+]);
+
+const LOGIN_WINDOW_MS = 5 * 60 * 1000;
+const MAX_LOGIN_FAILURES = 5;
+const loginFailuresByIp = new Map();
+
 // Token utilities
 function generateToken(payload = {}) {
   const data = JSON.stringify({ ...payload, timestamp: Date.now() });
@@ -34,23 +53,59 @@ function generateToken(payload = {}) {
 }
 
 function verifyToken(token) {
-  if (!token || typeof token !== 'string') return false;
-  const parts = token.split('.');
-  if (parts.length !== 2) return false;
-  const [dataB64, signature] = parts;
-  const expectedSignature = crypto.createHmac('sha256', AUTH_SECRET).update(dataB64).digest('base64url');
-  if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-    try {
-      const decoded = JSON.parse(Buffer.from(dataB64, 'base64url').toString('utf8'));
-      // Valid for 30 days
-      if (Date.now() - decoded.timestamp < 30 * 24 * 60 * 60 * 1000) {
-        return decoded;
-      }
-    } catch (e) {
-      return false;
-    }
+  try {
+    if (typeof token !== 'string') return false;
+
+    const parts = token.split('.');
+    if (parts.length !== 2) return false;
+
+    const [dataB64, signature] = parts;
+    if (!dataB64 || !signature) return false;
+
+    const expectedSignature = crypto.createHmac('sha256', AUTH_SECRET).update(dataB64).digest('base64url');
+    const signatureBuffer = Buffer.from(signature, 'utf8');
+    const expectedSignatureBuffer = Buffer.from(expectedSignature, 'utf8');
+
+    if (signatureBuffer.length !== expectedSignatureBuffer.length) return false;
+    if (!crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer)) return false;
+
+    const decoded = JSON.parse(Buffer.from(dataB64, 'base64url').toString('utf8'));
+    const timestamp = decoded?.timestamp;
+    const now = Date.now();
+    const maxTokenAgeMs = 30 * 24 * 60 * 60 * 1000;
+
+    if (!Number.isFinite(timestamp)) return false;
+    if (timestamp > now) return false;
+    if (now - timestamp >= maxTokenAgeMs) return false;
+
+    return decoded;
+  } catch {
+    return false;
   }
-  return false;
+}
+
+function getClientIp(req) {
+  const forwardedFor = req.headers['x-forwarded-for'];
+  if (typeof forwardedFor === 'string' && forwardedFor.trim()) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  return req.socket.remoteAddress || 'unknown';
+}
+
+function getLoginFailureState(ip, now = Date.now()) {
+  const state = loginFailuresByIp.get(ip);
+  if (!state || now - state.windowStartedAt >= LOGIN_WINDOW_MS) {
+    loginFailuresByIp.delete(ip);
+    return null;
+  }
+  return state;
+}
+
+function recordLoginFailure(ip, now = Date.now()) {
+  const state = getLoginFailureState(ip, now) || { count: 0, windowStartedAt: now };
+  state.count += 1;
+  loginFailuresByIp.set(ip, state);
+  return state;
 }
 
 function getRequestToken(req) {
@@ -113,12 +168,29 @@ const server = http.createServer(async (req, res) => {
 
   // 1. Auth Endpoint: Login
   if (reqPath === '/api/auth/login' && req.method === 'POST') {
+    res.setHeader('Cache-Control', 'no-store');
+    const clientIp = getClientIp(req);
+    const now = Date.now();
+    const failureState = getLoginFailureState(clientIp, now);
+
+    if (failureState?.count >= MAX_LOGIN_FAILURES) {
+      const retryAfterSeconds = Math.max(1, Math.ceil((LOGIN_WINDOW_MS - (now - failureState.windowStartedAt)) / 1000));
+      res.writeHead(429, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Retry-After': String(retryAfterSeconds)
+      });
+      res.end(JSON.stringify({ status: 'error', message: 'TOO MANY LOGIN ATTEMPTS' }));
+      return;
+    }
+
     const body = await parseJsonBody(req);
-    const passwordInput = (body.password || '').trim();
+    const passwordInput = typeof body.password === 'string' ? body.password.trim() : '';
 
     if (passwordInput === MASTER_PASSWORD) {
+      loginFailuresByIp.delete(clientIp);
       const token = generateToken({ role: 'admin', user: 'boss' });
-      res.setHeader('Set-Cookie', `hq_session_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`);
+      const secureCookie = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+      res.setHeader('Set-Cookie', `hq_session_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000${secureCookie}`);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({
         status: 'success',
@@ -127,6 +199,7 @@ const server = http.createServer(async (req, res) => {
       }));
       return;
     } else {
+      recordLoginFailure(clientIp, now);
       res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({
         status: 'error',
@@ -138,6 +211,7 @@ const server = http.createServer(async (req, res) => {
 
   // 2. Auth Endpoint: Verify Token
   if (reqPath === '/api/auth/verify') {
+    res.setHeader('Cache-Control', 'no-store');
     const token = getRequestToken(req);
     const session = verifyToken(token);
     if (session) {
@@ -222,18 +296,17 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // 3. Static files serving with strict Path Traversal Protection
+  // 3. Static files serving with an explicit browser-facing allowlist
   if (reqPath === '/') reqPath = '/index.html';
-  
-  // Sanitize path against directory traversal
-  const safeReqPath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
-  const filePath = path.resolve(ROOT, '.' + safeReqPath);
 
-  if (!filePath.startsWith(ROOT)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('403 Forbidden: Path Traversal Blocked');
+  const staticFile = STATIC_FILES.get(reqPath);
+  if (!staticFile) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('404 Not Found');
     return;
   }
+
+  const filePath = path.join(ROOT, staticFile);
 
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     const ext = path.extname(filePath).toLowerCase();
