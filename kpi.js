@@ -506,16 +506,16 @@ let KPI_DATA = {
     {
       id: 'radar-x',
       name: 'Nadia',
-      title: 'Data & SERP Growth Analyst',
+      title: 'SEO Intelligence Agent',
       avatar: '👩‍💻',
       color: '#ffe600',
-      kpiScore: '94%',
-      kpiStatus: '76% HALAMAN 1 GOOGLE',
+      kpiScore: 'UNAVAILABLE',
+      kpiStatus: 'NOT ANALYZED',
       metrics: [
-        { label: 'Keywords Tracked', value: '30 Inti' },
-        { label: 'Posisi Halaman 1', value: '23 Keyword' },
-        { label: 'GEO Citation AI', value: '94% Densitas' },
-        { label: 'SERP Telemetry', value: 'Live Calibrated' }
+        { label: 'Opportunities', value: 'UNAVAILABLE' },
+        { label: 'High Priority', value: 'UNAVAILABLE' },
+        { label: 'Tasks Proposed', value: 'UNAVAILABLE' },
+        { label: 'Last Analysis', value: 'UNAVAILABLE' }
       ]
     },
     {

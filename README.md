@@ -36,6 +36,23 @@ npm start
 http://localhost:3333
 ```
 
+## Nadia v1 — SEO Intelligence Agent
+
+Nadia converts Google Ads search-term evidence into clustered SEO opportunities and proposed tasks for Maya. Core intent, relevance, clustering, scoring, recommendations, and task generation are deterministic and do not require an LLM.
+
+Authenticated endpoints:
+
+- `GET /api/agents/nadia/status`
+- `GET /api/agents/nadia/opportunities?classification=&minScore=&limit=`
+- `POST /api/agents/nadia/analyze`
+- `POST /api/agents/nadia/tasks` with `{ "opportunityId": "..." }`
+
+Data status is explicit: `LIVE`, `CACHED`, `MANUAL`, `SIMULATED`, `UNAVAILABLE`. The current legacy `SEARCH_TERMS_VAULT_DATA` fallback is always labelled `MANUAL`; it is never presented as live Google Ads API data. GSC is labelled `LIVE` only after a successful outbound API request, `CACHED` when disk cache is used, and `UNAVAILABLE` when neither is available. Competitor SERP and LLM providers remain `UNAVAILABLE` until configured. Every derived intent, relevance, score, and classification also carries an evidence record sourced from `nadia_rule_engine_v1`, labelled `MANUAL` because its heuristics are human-configured.
+
+Persistence uses atomic JSON replacement under `data/nadia/` for opportunities, proposed SEO tasks, and analysis audit records. Nadia v1 has no publish, deploy, Google Ads mutation, content deletion, or PR merge capability.
+
+Opportunity score weights total 100 points: business relevance 25, buyer intent 20, paid traffic evidence 15, paid cost/CPC pressure 10, GSC search demand 10, organic ranking opportunity 10, and conversion evidence 10. Conversion is evidence, not a mandatory gate. Irrelevant intent or business relevance at/below 20 is hard-capped into `DISCARD`. Buckets are `HIGH_PRIORITY` 85+, `SEO_EXPERIMENT` 70+, `SUPPORTING_CONTENT` 50+, `MONITOR` 30+, and `DISCARD` below 30.
+
 ---
 
 ## 🌐 Live Production Deployment
@@ -48,8 +65,8 @@ http://localhost:3333
 
 ## 📈 Setup Google Search Console (Live SERP Data)
 
-The KPI dashboard's keyword ranking data (`/api/serp-audit`) is fetched live from the
-**Google Search Console API** — no fake/hardcoded numbers. Competitor benchmarking
+The KPI dashboard's keyword ranking cache is refreshed from the **Google Search Console API**
+and served by `/api/serp-audit`; the endpoint itself does not perform a live fetch. Competitor benchmarking
 (who ranks #1/#2/#3 above us) is **not** available through this API, so that part
 stays a manually-curated list until a paid SERP API is added.
 
@@ -97,7 +114,7 @@ new page can legitimately show "Belum Ada Data" for a while, that's expected.
 ## 🔒 Security & Authorization
 
 - All `/api/*` endpoints require `Authorization: Bearer <HMAC_TOKEN>` or valid `hq_session_token` cookie.
-- Master Passcode: Configurable via environment variable `HQ_PASSWORD` (Default: `Metr0Land`).
+- `HQ_PASSWORD` and `HQ_AUTH_SECRET` are mandatory. The process fails closed when either is missing or blank; there are no source-code defaults.
 
 ---
 
