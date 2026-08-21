@@ -1,5 +1,12 @@
 import crypto from 'crypto';
-import { CANNIBALIZATION_RULES, CLASSIFICATIONS, INTENTS, RECOMMENDATIONS } from './constants.mjs';
+import {
+  CANNIBALIZATION_RULES,
+  CLASSIFICATIONS,
+  DATA_STATUSES,
+  EXISTING_PAGE_STATUSES,
+  INTENTS,
+  RECOMMENDATIONS
+} from './constants.mjs';
 import { calculateOpportunityScore } from './scoring.mjs';
 
 function sum(items, field) {
@@ -27,22 +34,24 @@ function detectCannibalization(rankingUrls) {
   return materialPages.length >= CANNIBALIZATION_RULES.minimumMaterialPages;
 }
 
-function chooseRecommendation({ classification, intent, existingPageFound, cannibalization }) {
+function chooseRecommendation({ classification, intent, existingPageStatus, cannibalization }) {
   if (classification === CLASSIFICATIONS.DISCARD) return RECOMMENDATIONS.DISCARD;
   if (cannibalization) return RECOMMENDATIONS.MERGE_CANNIBALIZATION;
-  if (existingPageFound && [CLASSIFICATIONS.HIGH_PRIORITY, CLASSIFICATIONS.SEO_EXPERIMENT].includes(classification)) {
+  if (existingPageStatus === EXISTING_PAGE_STATUSES.FOUND && classification !== CLASSIFICATIONS.MONITOR) {
     return RECOMMENDATIONS.OPTIMIZE_EXISTING;
   }
+  if (existingPageStatus === EXISTING_PAGE_STATUSES.UNKNOWN) return RECOMMENDATIONS.MONITOR;
   if (intent === INTENTS.INFORMATIONAL || classification === CLASSIFICATIONS.SUPPORTING_CONTENT) {
     return RECOMMENDATIONS.CREATE_SUPPORTING_CONTENT;
   }
-  if (!existingPageFound && [CLASSIFICATIONS.HIGH_PRIORITY, CLASSIFICATIONS.SEO_EXPERIMENT].includes(classification)) {
+  if (existingPageStatus === EXISTING_PAGE_STATUSES.NOT_FOUND
+    && [CLASSIFICATIONS.HIGH_PRIORITY, CLASSIFICATIONS.SEO_EXPERIMENT].includes(classification)) {
     return RECOMMENDATIONS.CREATE_NEW_PAGE;
   }
   return RECOMMENDATIONS.MONITOR;
 }
 
-function buildReasoning({ businessRelevance, intent, ads, gsc, cannibalization, classification }) {
+function buildReasoning({ businessRelevance, intent, ads, gsc, existingPageStatus, cannibalization, classification }) {
   const reasoning = [];
   if (businessRelevance >= 80) reasoning.push('Business relevance is high for TepatLaser services.');
   else if (businessRelevance >= 50) reasoning.push('Query is relevant but not a direct core-service demand signal.');
@@ -52,6 +61,9 @@ function buildReasoning({ businessRelevance, intent, ads, gsc, cannibalization, 
   if ((ads.conversions || 0) === 0 && (ads.clicks || 0) > 0) reasoning.push('Zero recorded conversions did not trigger an automatic discard.');
   if ((gsc.impressions || 0) > 0) reasoning.push(`GSC evidence includes ${gsc.impressions} impressions at average position ${gsc.position}.`);
   if (cannibalization) reasoning.push('Multiple materially visible URLs indicate potential keyword cannibalization.');
+  if (existingPageStatus === EXISTING_PAGE_STATUSES.UNKNOWN) {
+    reasoning.push('Existing-page status is unknown because GSC evidence is unavailable; no new page is recommended from missing data.');
+  }
   if (classification === CLASSIFICATIONS.DISCARD) reasoning.push('Hard relevance/intent gate limits this opportunity to DISCARD.');
   return reasoning;
 }
@@ -78,14 +90,17 @@ function buildEvidence(cluster, ads, gsc, derivedAnalysis) {
     {
       type: 'DERIVED_ANALYSIS',
       source: 'nadia_rule_engine_v1',
-      status: 'MANUAL',
+      status: DATA_STATUSES.DERIVED,
       fetchedAt: derivedAnalysis.analyzedAt,
       ruleVersion: '1.0.0',
       metrics: {
         intent: derivedAnalysis.intent,
         businessRelevance: derivedAnalysis.businessRelevance,
         opportunityScore: derivedAnalysis.opportunityScore,
-        classification: derivedAnalysis.classification
+        classification: derivedAnalysis.classification,
+        recommendation: derivedAnalysis.recommendation,
+        existingPageStatus: derivedAnalysis.existingPageStatus,
+        cannibalization: derivedAnalysis.cannibalization
       }
     }
   ];
@@ -118,13 +133,20 @@ export function buildOpportunity(cluster, gscMetrics) {
   const intent = [...items].sort((a, b) => b.businessRelevance - a.businessRelevance)[0].intent;
   const businessRelevance = Math.max(...items.map(item => item.businessRelevance));
   const rankingUrls = gscMetrics.rankingUrls || [];
-  const cannibalization = detectCannibalization(rankingUrls);
-  const existingPageFound = rankingUrls.length > 0;
+  const existingPageStatus = gscMetrics.status === DATA_STATUSES.UNAVAILABLE
+    ? EXISTING_PAGE_STATUSES.UNKNOWN
+    : rankingUrls.length > 0 ? EXISTING_PAGE_STATUSES.FOUND : EXISTING_PAGE_STATUSES.NOT_FOUND;
+  const existingPageFound = existingPageStatus === EXISTING_PAGE_STATUSES.UNKNOWN
+    ? null
+    : existingPageStatus === EXISTING_PAGE_STATUSES.FOUND;
+  const cannibalization = existingPageStatus === EXISTING_PAGE_STATUSES.UNKNOWN
+    ? null
+    : detectCannibalization(rankingUrls);
   const scoreResult = calculateOpportunityScore({ intent, businessRelevance, ads, gsc: gscMetrics });
   const recommendation = chooseRecommendation({
     classification: scoreResult.classification,
     intent,
-    existingPageFound,
+    existingPageStatus,
     cannibalization
   });
   const analyzedAt = new Date().toISOString();
@@ -133,7 +155,10 @@ export function buildOpportunity(cluster, gscMetrics) {
     intent,
     businessRelevance,
     opportunityScore: scoreResult.score,
-    classification: scoreResult.classification
+    classification: scoreResult.classification,
+    recommendation,
+    existingPageStatus,
+    cannibalization
   };
 
   return {
@@ -155,14 +180,24 @@ export function buildOpportunity(cluster, gscMetrics) {
       status: gscMetrics.status,
       fetchedAt: gscMetrics.fetchedAt
     },
+    existingPageStatus,
     existingPageFound,
     existingUrl: rankingUrls[0]?.url || null,
     cannibalization,
     opportunityScore: scoreResult.score,
     scoreComponents: scoreResult.components,
+    scoreExplanation: scoreResult.componentDetails,
     classification: scoreResult.classification,
     recommendation,
-    reasoning: buildReasoning({ businessRelevance, intent, ads, gsc: gscMetrics, cannibalization, classification: scoreResult.classification }),
+    reasoning: buildReasoning({
+      businessRelevance,
+      intent,
+      ads,
+      gsc: gscMetrics,
+      existingPageStatus,
+      cannibalization,
+      classification: scoreResult.classification
+    }),
     evidence: buildEvidence(cluster, ads, gscMetrics, derivedAnalysis),
     analyzedAt
   };

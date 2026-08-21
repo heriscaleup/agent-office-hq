@@ -2,6 +2,7 @@ export const DATA_STATUSES = Object.freeze({
   LIVE: 'LIVE',
   CACHED: 'CACHED',
   MANUAL: 'MANUAL',
+  DERIVED: 'DERIVED',
   SIMULATED: 'SIMULATED',
   UNAVAILABLE: 'UNAVAILABLE'
 });
@@ -30,6 +31,12 @@ export const RECOMMENDATIONS = Object.freeze({
   MERGE_CANNIBALIZATION: 'MERGE_CANNIBALIZATION',
   MONITOR: 'MONITOR',
   DISCARD: 'DISCARD'
+});
+
+export const EXISTING_PAGE_STATUSES = Object.freeze({
+  FOUND: 'FOUND',
+  NOT_FOUND: 'NOT_FOUND',
+  UNKNOWN: 'UNKNOWN'
 });
 
 export const NADIA_PERMISSIONS = Object.freeze([
@@ -80,6 +87,24 @@ export const SCORING_WEIGHTS = Object.freeze({
   conversionEvidence: 10
 });
 
+export const SCORING_CALIBRATION = Object.freeze({
+  businessRelevanceForMaxPoints: 100,
+  buyerIntentPointsForMax: 20,
+  clicksForMaxPaidEvidence: 20,
+  cpcForMaxCostPressure: 25000,
+  costForMaxPressure: 1000000,
+  impressionsForMaxDemand: 1000,
+  conversionsForMaxEvidence: 3,
+  organicPositionFactors: Object.freeze([
+    { maximumPosition: 3, factor: 0.2 },
+    { maximumPosition: 10, factor: 0.6 },
+    { maximumPosition: 20, factor: 1 },
+    { maximumPosition: 40, factor: 0.7 },
+    { maximumPosition: 60, factor: 0.4 },
+    { maximumPosition: Infinity, factor: 0.15 }
+  ])
+});
+
 export const CLASSIFICATION_THRESHOLDS = Object.freeze([
   { min: 85, value: CLASSIFICATIONS.HIGH_PRIORITY },
   { min: 70, value: CLASSIFICATIONS.SEO_EXPERIMENT },
@@ -98,15 +123,20 @@ export const CANNIBALIZATION_RULES = Object.freeze({
 export const CLUSTERING_RULES = Object.freeze({
   similarityThreshold: 0.55,
   stopWords: ['jasa', 'harga', 'biaya', 'vendor', 'supplier', 'terdekat', 'di', 'dan', 'untuk', 'per'],
-  distinguishingTokens: ['stainless', 'kayu', 'mdf', 'besi', 'plat', 'aluminium', 'akrilik', 'acp', 'fasad', 'pagar', 'mihrab'],
+  distinguishingTokens: ['stainless', 'steel', 'kayu', 'mdf', 'besi', 'plat', 'aluminium', 'akrilik', 'acp', 'fasad', 'pagar', 'mihrab'],
   synonyms: {
     potong: 'cutting',
     cut: 'cutting',
-    steel: 'stainless',
     ss: 'stainless',
     acrylic: 'akrilik',
     tangsel: 'tangerang'
   }
+});
+
+export const GSC_REQUEST_RULES = Object.freeze({
+  defaultConcurrency: 4,
+  maximumConcurrency: 5,
+  defaultMaxQueries: 300
 });
 
 export const GSC_SITES = Object.freeze([

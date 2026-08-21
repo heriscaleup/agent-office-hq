@@ -85,6 +85,7 @@ test('cached GSC preserves all ranking pages and detects cannibalization', async
     });
     const gsc = await provider.loadCluster(['jasa laser cutting stainless']);
     assert.equal(gsc.status, 'CACHED');
+    assert.equal(gsc.fetchedAt, '2026-08-21T00:00:00.000Z');
     assert.equal(gsc.rankingUrls.length, 2);
     const item = {
       searchTerm: 'jasa laser cutting stainless',
@@ -193,8 +194,12 @@ test('authenticated Nadia API persists analysis and proposed tasks across restar
       }
       const derivedEvidence = opportunity.evidence.find(item => item.type === 'DERIVED_ANALYSIS');
       assert.equal(derivedEvidence.source, 'nadia_rule_engine_v1');
-      assert.equal(derivedEvidence.status, 'MANUAL');
+      assert.equal(derivedEvidence.status, 'DERIVED');
       assert.equal(typeof derivedEvidence.fetchedAt, 'string');
+      assert.equal(opportunity.existingPageStatus, 'UNKNOWN');
+      assert.equal(opportunity.existingPageFound, null);
+      assert.notEqual(opportunity.recommendation, 'CREATE_NEW_PAGE');
+      assert.equal(typeof opportunity.scoreExplanation.businessRelevance.points, 'number');
     }
 
     const taskOpportunity = analysis.opportunities.find(item => item.classification !== 'DISCARD');

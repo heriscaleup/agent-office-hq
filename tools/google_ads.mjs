@@ -60,7 +60,7 @@ export class ManualGoogleAdsProvider {
       source: 'google_ads_search_terms_manual',
       status: items.length ? DATA_STATUSES.MANUAL : DATA_STATUSES.UNAVAILABLE,
       fetchedAt,
-      dateRange: null,
+      dateRange: items.find(item => item.dateRange)?.dateRange || null,
       items,
       error: items.length ? null : 'No manual Google Ads search terms were supplied.'
     };
@@ -85,4 +85,3 @@ export class GoogleAdsSource {
 }
 
 export { normalizeManualTerm };
-

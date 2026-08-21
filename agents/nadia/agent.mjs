@@ -33,9 +33,14 @@ function sourceRecord(source, status, fetchedAt, details = {}) {
 }
 
 export class NadiaAgent {
-  constructor({ persistence = new NadiaPersistence(), legacySearchTerms = SEARCH_TERMS_VAULT_DATA } = {}) {
+  constructor({
+    persistence = new NadiaPersistence(),
+    legacySearchTerms = SEARCH_TERMS_VAULT_DATA,
+    gscProviderFactory = null
+  } = {}) {
     this.persistence = persistence;
     this.legacySearchTerms = legacySearchTerms;
+    this.gscProviderFactory = gscProviderFactory;
     this.serpProvider = new SerpProvider();
     this.llmProvider = new LLMProvider();
   }
@@ -49,7 +54,10 @@ export class NadiaAgent {
   }
 
   createGscProvider() {
-    return new SearchConsoleProvider({ cachedSnapshot: getGscCacheSnapshot() });
+    const cachedSnapshot = getGscCacheSnapshot();
+    return this.gscProviderFactory
+      ? this.gscProviderFactory({ cachedSnapshot })
+      : new SearchConsoleProvider({ cachedSnapshot });
   }
 
   async analyze({ manualSearchTerms } = {}) {
@@ -76,6 +84,10 @@ export class NadiaAgent {
         opportunities.push(buildOpportunity(cluster, gsc));
       }
 
+      for (const warning of gscProvider.getWarnings()) {
+        errors.push({ scope: 'google_search_console', message: warning });
+      }
+
       opportunities.sort((a, b) => b.opportunityScore - a.opportunityScore || a.primaryKeyword.localeCompare(b.primaryKeyword));
       await this.persistence.replaceOpportunities(opportunities);
     } catch (error) {
@@ -85,9 +97,12 @@ export class NadiaAgent {
     const finishedAt = new Date().toISOString();
     const serpStatus = await this.serpProvider.getStatus();
     const llmStatus = await this.llmProvider.explain();
+    const gscSummary = gscProvider.sourceSummary();
     const sources = [
       sourceRecord(adsResult?.source || 'google_ads', adsResult?.status || DATA_STATUSES.UNAVAILABLE, adsResult?.fetchedAt || finishedAt, { error: adsResult?.error || null }),
-      sourceRecord('google_search_console', gscProvider.sourceStatus(), finishedAt),
+      sourceRecord(gscSummary.source, gscSummary.status, gscSummary.fetchedAt || finishedAt, {
+        requestStats: gscProvider.getStats()
+      }),
       sourceRecord(serpStatus.source, serpStatus.status, serpStatus.fetchedAt, { error: serpStatus.error }),
       sourceRecord(llmStatus.source, llmStatus.status, llmStatus.fetchedAt, { error: llmStatus.error })
     ];
@@ -101,6 +116,7 @@ export class NadiaAgent {
       opportunitiesCreated: opportunities.length,
       highPriority: opportunities.filter(item => item.classification === CLASSIFICATIONS.HIGH_PRIORITY).length,
       tasksCreated: 0,
+      gscRequestStats: gscProvider.getStats(),
       errors
     };
     await this.persistence.appendAnalysisRun(run);
@@ -143,7 +159,7 @@ export class NadiaAgent {
       this.persistence.readAnalysisRuns()
     ]);
     const lastRun = runs.at(-1) || null;
-    const gscStatus = this.createGscProvider().sourceStatus();
+    const gscSummary = this.createGscProvider().sourceSummary();
     const currentStatus = !lastRun
       ? 'NOT_ANALYZED'
       : lastRun.errors.some(error => error.scope === 'analysis')
@@ -156,7 +172,7 @@ export class NadiaAgent {
       dataSources: lastRun?.sources || [
         sourceRecord('google_ads', DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
         sourceRecord('google_ads_search_terms_manual', this.legacySearchTerms.length ? DATA_STATUSES.MANUAL : DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
-        sourceRecord('google_search_console', gscStatus, new Date().toISOString()),
+        sourceRecord('google_search_console', gscSummary.status, gscSummary.fetchedAt || new Date().toISOString()),
         sourceRecord('serp_provider', DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
         sourceRecord('llm:none', DATA_STATUSES.UNAVAILABLE, new Date().toISOString())
       ],
