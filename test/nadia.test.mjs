@@ -166,6 +166,7 @@ test('authenticated Nadia API persists analysis and proposed tasks across restar
     first = await startServer({ port: 39510, dataDir });
     const unauthorizedRoutes = [
       '/api/agents/nadia/status',
+      '/api/agents/nadia/google-ads/status',
       '/api/agents/nadia/opportunities',
       '/api/agents/nadia/analyze',
       '/api/agents/nadia/tasks'
@@ -177,6 +178,12 @@ test('authenticated Nadia API persists analysis and proposed tasks across restar
 
     const token = await authenticate(first.base);
     const headers = { authorization: `Bearer ${token}` };
+    const adsStatusResponse = await fetch(`${first.base}/api/agents/nadia/google-ads/status`, { headers });
+    assert.equal(adsStatusResponse.status, 200);
+    const adsStatus = await adsStatusResponse.json();
+    assert.equal(adsStatus.provider.dataStatus, 'UNAVAILABLE');
+    assert.equal(adsStatus.provider.reasonCode, 'MISSING_CREDENTIALS');
+    assert.equal(Object.hasOwn(adsStatus.provider, 'developerToken'), false);
     const analysisResponse = await fetch(`${first.base}/api/agents/nadia/analyze`, {
       method: 'POST', headers: { ...headers, 'content-type': 'application/json' }, body: '{}'
     });

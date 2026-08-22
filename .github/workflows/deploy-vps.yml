@@ -69,6 +69,15 @@ jobs:
               -e NODE_ENV=production \
               -e TRUST_PROXY=true \
               -e GSC_SERVICE_ACCOUNT_JSON="${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}" \
+              -e GOOGLE_ADS_DEVELOPER_TOKEN="${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}" \
+              -e GOOGLE_ADS_CLIENT_ID="${{ secrets.GOOGLE_ADS_CLIENT_ID }}" \
+              -e GOOGLE_ADS_CLIENT_SECRET="${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}" \
+              -e GOOGLE_ADS_REFRESH_TOKEN="${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}" \
+              -e GOOGLE_ADS_CUSTOMER_ID="${{ secrets.GOOGLE_ADS_CUSTOMER_ID }}" \
+              -e GOOGLE_ADS_LOGIN_CUSTOMER_ID="${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}" \
+              -e GOOGLE_ADS_API_VERSION="${{ vars.GOOGLE_ADS_API_VERSION }}" \
+              -e NADIA_GOOGLE_ADS_LOOKBACK_DAYS="${{ vars.NADIA_GOOGLE_ADS_LOOKBACK_DAYS }}" \
+              -e NADIA_MAX_GOOGLE_ADS_ROWS="${{ vars.NADIA_MAX_GOOGLE_ADS_ROWS }}" \
               node:20-alpine node server.mjs
 
             echo "✅ [CI/CD] Deployment completed successfully! Live on https://seo.tepatlaser.com"
