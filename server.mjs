@@ -360,6 +360,17 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (reqPath === '/api/agents/nadia/google-ads/status' && req.method === 'GET') {
+      try {
+        const provider = nadiaAgent.getGoogleAdsStatus();
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ status: 'success', provider }, null, 2));
+      } catch (error) {
+        sendNadiaApiError(res, 'google-ads-status', error);
+      }
+      return;
+    }
+
     if (reqPath === '/api/agents/nadia/opportunities' && req.method === 'GET') {
       try {
         const opportunities = await nadiaAgent.getOpportunities({

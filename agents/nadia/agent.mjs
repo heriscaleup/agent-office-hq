@@ -14,7 +14,7 @@ import { buildSeoTask } from './task_builder.mjs';
 export const NADIA_IDENTITY = Object.freeze({
   id: 'radar-x',
   name: 'Nadia',
-  version: '1.0.0',
+  version: '1.1.0',
   role: 'SEO Intelligence Agent',
   goal: 'Convert paid-inefficient but relevant demand into evidence-backed organic opportunities and proposed SEO tasks.',
   mode: 'DETERMINISTIC_RULE_ENGINE',
@@ -36,11 +36,13 @@ export class NadiaAgent {
   constructor({
     persistence = new NadiaPersistence(),
     legacySearchTerms = SEARCH_TERMS_VAULT_DATA,
-    gscProviderFactory = null
+    gscProviderFactory = null,
+    googleAdsProvider = new GoogleAdsProvider()
   } = {}) {
     this.persistence = persistence;
     this.legacySearchTerms = legacySearchTerms;
     this.gscProviderFactory = gscProviderFactory;
+    this.googleAdsProvider = googleAdsProvider;
     this.serpProvider = new SerpProvider();
     this.llmProvider = new LLMProvider();
   }
@@ -48,7 +50,7 @@ export class NadiaAgent {
   createGoogleAdsSource(manualSearchTerms) {
     const manualRecords = Array.isArray(manualSearchTerms) ? manualSearchTerms : this.legacySearchTerms;
     return new GoogleAdsSource({
-      liveProvider: new GoogleAdsProvider(),
+      liveProvider: this.googleAdsProvider,
       manualProvider: new ManualGoogleAdsProvider(manualRecords)
     });
   }
@@ -71,6 +73,15 @@ export class NadiaAgent {
 
     try {
       adsResult = await this.createGoogleAdsSource(manualSearchTerms).loadSearchTerms();
+      for (const warning of adsResult.warnings || []) {
+        errors.push({ scope: `google_ads:${warning.scope}`, message: warning.reasonCode });
+      }
+      if (adsResult.fallbackFrom) {
+        errors.push({
+          scope: 'google_ads:live_provider',
+          message: adsResult.fallbackFrom.reasonCode || 'PROVIDER_UNAVAILABLE'
+        });
+      }
       const analyzedTerms = adsResult.items.map(item => ({
         ...item,
         intent: classifyIntent(item.searchTerm),
@@ -99,7 +110,18 @@ export class NadiaAgent {
     const llmStatus = await this.llmProvider.explain();
     const gscSummary = gscProvider.sourceSummary();
     const sources = [
-      sourceRecord(adsResult?.source || 'google_ads', adsResult?.status || DATA_STATUSES.UNAVAILABLE, adsResult?.fetchedAt || finishedAt, { error: adsResult?.error || null }),
+      sourceRecord(adsResult?.source || 'google_ads', adsResult?.status || DATA_STATUSES.UNAVAILABLE, adsResult?.fetchedAt || finishedAt, {
+        health: adsResult?.health || null,
+        dateRange: adsResult?.dateRange || null,
+        currencyCode: adsResult?.currencyCode || null,
+        costScoringCompatible: adsResult?.costScoringCompatible ?? null,
+        rowsReceived: adsResult?.rowsReceived ?? null,
+        rowsProcessed: adsResult?.rowsProcessed ?? null,
+        truncated: adsResult?.truncated ?? false,
+        subSources: adsResult?.subSources || null,
+        fallbackFrom: adsResult?.fallbackFrom || null,
+        error: adsResult?.error || null
+      }),
       sourceRecord(gscSummary.source, gscSummary.status, gscSummary.fetchedAt || finishedAt, {
         requestStats: gscProvider.getStats()
       }),
@@ -160,6 +182,7 @@ export class NadiaAgent {
     ]);
     const lastRun = runs.at(-1) || null;
     const gscSummary = this.createGscProvider().sourceSummary();
+    const googleAdsStatus = this.googleAdsProvider.getStatus();
     const currentStatus = !lastRun
       ? 'NOT_ANALYZED'
       : lastRun.errors.some(error => error.scope === 'analysis')
@@ -170,7 +193,12 @@ export class NadiaAgent {
       currentStatus,
       lastAnalysis: lastRun?.finishedAt || null,
       dataSources: lastRun?.sources || [
-        sourceRecord('google_ads', DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
+        sourceRecord('google_ads', googleAdsStatus.dataStatus, googleAdsStatus.lastSuccessfulFetch, {
+          health: googleAdsStatus.health,
+          reasonCode: googleAdsStatus.reasonCode,
+          searchCampaigns: googleAdsStatus.searchCampaigns,
+          performanceMax: googleAdsStatus.performanceMax
+        }),
         sourceRecord('google_ads_search_terms_manual', this.legacySearchTerms.length ? DATA_STATUSES.MANUAL : DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
         sourceRecord('google_search_console', gscSummary.status, gscSummary.fetchedAt || new Date().toISOString()),
         sourceRecord('serp_provider', DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
@@ -181,6 +209,10 @@ export class NadiaAgent {
       tasksProposed: tasks.filter(item => item.status === 'PROPOSED').length,
       lastRun
     };
+  }
+
+  getGoogleAdsStatus() {
+    return this.googleAdsProvider.getStatus();
   }
 
   async answer(message) {

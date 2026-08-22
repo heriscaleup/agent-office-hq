@@ -43,6 +43,7 @@ Nadia converts Google Ads search-term evidence into clustered SEO opportunities 
 Authenticated endpoints:
 
 - `GET /api/agents/nadia/status`
+- `GET /api/agents/nadia/google-ads/status`
 - `GET /api/agents/nadia/opportunities?classification=&minScore=&limit=`
 - `POST /api/agents/nadia/analyze`
 - `POST /api/agents/nadia/tasks` with `{ "opportunityId": "..." }`
@@ -56,6 +57,28 @@ Opportunity score weights total 100 points: business relevance 25, buyer intent 
 Existing-page evidence uses `FOUND`, `NOT_FOUND`, or `UNKNOWN`. When GSC is unavailable, Nadia returns `UNKNOWN`, keeps `existingPageFound` as `null`, and will not recommend a new page from missing evidence. Recommendation priority remains discard, cannibalization merge, optimize an evidenced existing page, create only when absence is evidenced, then monitor.
 
 GSC requests are deduplicated by normalized query for each analysis run and pass through a lightweight bounded queue. `NADIA_GSC_CONCURRENCY` defaults to 4 and is capped at 5; `NADIA_MAX_GSC_QUERIES` defaults to 300 unique queries. Hitting the query limit degrades the audit run without crashing or inventing GSC metrics.
+
+### Google Ads live search terms (read-only)
+
+Nadia v1.1 first attempts the Google Ads API and uses the legacy vault only when the live provider is unavailable. A successful API query is labelled `LIVE`; fallback records remain `MANUAL`. Search campaigns use `search_term_view`, while Performance Max uses `campaign_search_term_view` without keyword-related segments. The connector only reads reporting resources and exposes no mutation capability.
+
+Configure production with placeholders through GitHub Secrets/Variables; never commit real values:
+
+```text
+GOOGLE_ADS_DEVELOPER_TOKEN=<set in GitHub Secret>
+GOOGLE_ADS_CLIENT_ID=<set in GitHub Secret>
+GOOGLE_ADS_CLIENT_SECRET=<set in GitHub Secret>
+GOOGLE_ADS_REFRESH_TOKEN=<set in GitHub Secret>
+GOOGLE_ADS_CUSTOMER_ID=<target customer ID, set in GitHub Secret>
+GOOGLE_ADS_LOGIN_CUSTOMER_ID=<optional manager customer ID, set in GitHub Secret>
+GOOGLE_ADS_API_VERSION=v25
+NADIA_GOOGLE_ADS_LOOKBACK_DAYS=90
+NADIA_MAX_GOOGLE_ADS_ROWS=10000
+```
+
+`GOOGLE_ADS_CUSTOMER_ID` is the Ads account whose reporting data is queried. `GOOGLE_ADS_LOGIN_CUSTOMER_ID` is only needed when access is made through a manager account; both IDs may be entered with dashes and are normalized before requests. The API version is centralized and configurable. Lookback is clamped to 7–365 days, outbound requests time out after 20 seconds, transient failures receive at most two retries, and processing is capped by the configured row limit. SearchStream response reading also has a bounded byte budget derived from that row limit, capped at 128 MiB, so a pathological response cannot grow memory without limit. Access tokens are refreshed and cached in memory only.
+
+The account currency is read from Google Ads. Existing CPC/cost calibration is IDR-specific, so the paid cost-pressure score is disabled when the account currency is not IDR or cannot be verified. Actual monetary metrics remain present with their currency provenance. Missing or partial Ads configuration does not stop HQ startup; provider health reports `UNAVAILABLE`, and manual fallback is used if available.
 
 ---
 
