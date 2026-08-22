@@ -80,6 +80,26 @@ function formatDate(d) {
  * returns a row if the query had at least one impression in the window.
  */
 export async function queryKeywordPosition(siteUrl, keyword, { windowDays = 28, lagDays = 3 } = {}) {
+  const metrics = await queryKeywordMetrics(siteUrl, keyword, { windowDays, lagDays });
+  if (!metrics.found) {
+    return { found: false, position: null, clicks: 0, impressions: 0, ctr: 0, page: null, rankingPages: [], dateRange: metrics.dateRange };
+  }
+
+  const best = metrics.rankingPages[0];
+  return {
+    found: true,
+    position: Math.round(best.position * 10) / 10,
+    clicks: best.clicks,
+    impressions: best.impressions,
+    ctr: Math.round(best.ctr * 1000) / 10,
+    page: best.url,
+    rankingPages: metrics.rankingPages,
+    dateRange: metrics.dateRange
+  };
+}
+
+/** Returns aggregate query metrics and every ranking page reported by GSC. */
+export async function queryKeywordMetrics(siteUrl, keyword, { windowDays = 28, lagDays = 3 } = {}) {
   const token = await getAccessToken();
 
   const end = new Date();
@@ -94,7 +114,7 @@ export async function queryKeywordPosition(siteUrl, keyword, { windowDays = 28, 
     dimensionFilterGroups: [{
       filters: [{ dimension: 'query', operator: 'equals', expression: keyword }]
     }],
-    rowLimit: 10
+    rowLimit: 25000
   };
 
   const url = `${SEARCH_ANALYTICS_ENDPOINT}/${encodeURIComponent(siteUrl)}/searchAnalytics/query`;
@@ -113,16 +133,36 @@ export async function queryKeywordPosition(siteUrl, keyword, { windowDays = 28, 
 
   const rows = data.rows || [];
   if (rows.length === 0) {
-    return { found: false, position: null, clicks: 0, impressions: 0, ctr: 0, page: null };
+    return {
+      found: false,
+      position: null,
+      clicks: 0,
+      impressions: 0,
+      ctr: 0,
+      rankingPages: [],
+      dateRange: { startDate: body.startDate, endDate: body.endDate }
+    };
   }
 
-  const best = rows.reduce((a, b) => (a.position < b.position ? a : b));
+  const rankingPages = rows.map(row => ({
+    url: row.keys[1],
+    clicks: Number(row.clicks) || 0,
+    impressions: Number(row.impressions) || 0,
+    ctr: Number(row.ctr) || 0,
+    position: Math.round((Number(row.position) || 0) * 10) / 10
+  })).sort((a, b) => a.position - b.position);
+  const clicks = rankingPages.reduce((sum, page) => sum + page.clicks, 0);
+  const impressions = rankingPages.reduce((sum, page) => sum + page.impressions, 0);
+  const position = impressions
+    ? rankingPages.reduce((sum, page) => sum + page.position * page.impressions, 0) / impressions
+    : rankingPages.reduce((sum, page) => sum + page.position, 0) / rankingPages.length;
   return {
     found: true,
-    position: Math.round(best.position * 10) / 10,
-    clicks: best.clicks,
-    impressions: best.impressions,
-    ctr: Math.round(best.ctr * 1000) / 10,
-    page: best.keys[1]
+    position: Math.round(position * 10) / 10,
+    clicks,
+    impressions,
+    ctr: impressions ? clicks / impressions : 0,
+    rankingPages,
+    dateRange: { startDate: body.startDate, endDate: body.endDate }
   };
 }

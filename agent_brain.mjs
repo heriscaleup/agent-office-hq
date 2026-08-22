@@ -40,39 +40,15 @@ Gua wajib inject angka presisi ini ke schema \`TechArticle\` karena Google Algor
   'radar-x': {
     id: 'radar-x',
     name: 'Nadia',
-    title: 'Data & SERP Growth Analyst',
+    title: 'SEO Intelligence Agent',
     avatar: '👩‍💻',
     color: '#ffe600',
-    personality: 'Analis data SERP yang skeptis, berbasis angka dan bukti crawler. Menolak klaim manis tanpa URL ranking riil.',
+    personality: 'Analis SEO berbasis provenance dan deterministic scoring. Menolak angka tanpa sumber.',
     quickPrompts: [
-      'Dasar lu bilang kita rank 4 plat besi apa?',
-      'Siapa musuh terberat kita di Page 1 Google?',
-      'Kapan keyword Bintaro & BSD tembus Top 3?'
-    ],
-    generateAnswer: (msg) => {
-      const lower = msg.toLowerCase();
-      if (lower.includes('dasar') || lower.includes('rank 4') || lower.includes('plat besi') || lower.includes('posisi')) {
-        return `Fakta lapangan ya Bos, gua gak pake asumsi:
-Untuk keyword **"jasa laser cutting plat besi"**, posisi kita ada di **Rank #4 Google Page 1** untuk domain \`jasalasercutting.com\`.
-- **Rank #1**: PT Metal Anugerah Suksestama (\`anugerahmetal.com\`) — Menang otoritas domain lama & katalog produk pabrik.
-- **Rank #2**: Sobat Laser (\`sobatlaser.com\`) — Menang user review & 24 jam.
-- **Rank #3**: Sumber Jaya Laser (\`sumberjayalaser.com\`) — Stok plat tebal.
-- **Rank #4**: **JasaLaserCutting.com (KITA)** — Naik +2 peringkat berkat kekuatan EMD (*Exact Match Domain*).
-Tinggal tambah tabel spesifikasi ketebalan 1mm-25mm buat salip Anugerah Metal ke Rank #1!`;
-      }
-      if (lower.includes('musuh') || lower.includes('kompetitor') || lower.includes('terberat') || lower.includes('lawan')) {
-        return `Musuh terberat kita terbagi 2 medan perang, Bos:
-1. **Medan Retail & Residensial (Bintaro/BSD)**: Lawan terberat adalah \`rajalasercutting.com\` dan \`kingsign.id\`. Mereka punya brand recall kuat.
-2. **Medan Industri Berat (Plat Besi & B2B)**: Lawan terberat adalah \`anugerahmetal.com\` dan \`tritunggalmetal.com\`.
-Kelemahan mereka: Website mereka lelet (WordPress berat) dan gak punya konten interaktif/GEO LLM. Kita bantai lewat kecepatan Astro v6 dan densitas data teknis!`;
-      }
-      if (lower.includes('kapan') || lower.includes('tembus') || lower.includes('top 3') || lower.includes('jadwal')) {
-        return `Estimasi audit crawler gua:
-- **JasaLaserCutting.com (Plat Besi & ACP)**: Sudah tembus **Top 3 & Top 4**, target #1 dalam 14–21 hari ke depan setelah indexation update.
-- **TepatLaser.com (Bintaro & BSD)**: Saat ini posisi **#14 (Page 2)** karena statusnya *Fresh URL Indexing*. Begitu Googlebot selesai mapping 15 internal links Maya, estimasi masuk Page 1 (Top 10) dalam 7–10 hari ke depan. Gua pantau live tiap hari!`;
-      }
-      return `Laporan SERP siap, Bos! Terkait "${msg}", radar gua saat ini memantau 30 keyword inti di 3 domain armada kita. Skor GEO Citation di ChatGPT SearchBot ada di **94%**. Gua bakal update status leaderboard begitu ada pergeseran posisi ranking Google!`;
-    }
+      'Tampilkan opportunity SEO tertinggi berdasarkan evidence.',
+      'Apa status dan provenance setiap data source?',
+      'Ringkas analysis run Nadia terakhir.'
+    ]
   },
 
   'iron-shield': {
@@ -189,6 +165,13 @@ export function processAgentChat(agentId, message, history = []) {
     return {
       status: 'error',
       message: 'Agent ID tidak ditemukan dalam registry.'
+    };
+  }
+
+  if (typeof agent.generateAnswer !== 'function') {
+    return {
+      status: 'error',
+      message: 'Agent ini menggunakan domain intelligence endpoint, bukan template chat legacy.'
     };
   }
 

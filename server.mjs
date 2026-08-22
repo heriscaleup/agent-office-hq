@@ -6,6 +6,7 @@ import net from 'net';
 import { fileURLToPath } from 'url';
 import { SEARCH_TERMS_VAULT_DATA, getAuditSummary, getKeywordsData, refreshSerpData, isGscConfigured } from './serp_auditor.mjs';
 import { processAgentChat, AGENT_KNOWLEDGE } from './agent_brain.mjs';
+import { nadiaAgent } from './agents/nadia/agent.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -243,6 +244,12 @@ function sendJsonBodyError(res, error) {
   res.end(JSON.stringify({ status: 'error', message: 'INVALID REQUEST BODY' }));
 }
 
+function sendNadiaApiError(res, operation, error) {
+  console.error(`[NADIA] ${operation} failed: ${error.message}`);
+  res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({ status: 'error', message: `NADIA ${operation.toUpperCase()} FAILED` }));
+}
+
 const server = http.createServer(async (req, res) => {
   const parsedUrl = new URL(req.url, `http://localhost:${PORT}`);
   let reqPath = parsedUrl.pathname;
@@ -338,6 +345,88 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (reqPath.startsWith('/api/agents/nadia/')) {
+      res.setHeader('Cache-Control', 'no-store');
+    }
+
+    if (reqPath === '/api/agents/nadia/status' && req.method === 'GET') {
+      try {
+        const status = await nadiaAgent.getStatus();
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ status: 'success', ...status }, null, 2));
+      } catch (error) {
+        sendNadiaApiError(res, 'status', error);
+      }
+      return;
+    }
+
+    if (reqPath === '/api/agents/nadia/opportunities' && req.method === 'GET') {
+      try {
+        const opportunities = await nadiaAgent.getOpportunities({
+          classification: parsedUrl.searchParams.get('classification') || undefined,
+          minScore: parsedUrl.searchParams.get('minScore') || 0,
+          limit: parsedUrl.searchParams.get('limit') || 100
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ status: 'success', count: opportunities.length, opportunities }, null, 2));
+      } catch (error) {
+        sendNadiaApiError(res, 'opportunities', error);
+      }
+      return;
+    }
+
+    if (reqPath === '/api/agents/nadia/analyze' && req.method === 'POST') {
+      let body;
+      try {
+        body = await parseJsonBody(req);
+      } catch (error) {
+        sendJsonBodyError(res, error);
+        return;
+      }
+      if (body.manualSearchTerms != null && !Array.isArray(body.manualSearchTerms)) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ status: 'error', message: 'manualSearchTerms must be an array when supplied.' }));
+        return;
+      }
+      try {
+        const result = await nadiaAgent.analyze({ manualSearchTerms: body.manualSearchTerms });
+        res.writeHead(result.status === 'success' ? 200 : 500, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify(result, null, 2));
+      } catch (error) {
+        sendNadiaApiError(res, 'analysis', error);
+      }
+      return;
+    }
+
+    if (reqPath === '/api/agents/nadia/tasks' && req.method === 'POST') {
+      let body;
+      try {
+        body = await parseJsonBody(req);
+      } catch (error) {
+        sendJsonBodyError(res, error);
+        return;
+      }
+      if (typeof body.opportunityId !== 'string' || !body.opportunityId.trim()) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ status: 'error', message: 'opportunityId is required.' }));
+        return;
+      }
+      try {
+        const task = await nadiaAgent.createTask(body.opportunityId.trim());
+        res.writeHead(201, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ status: 'success', task }, null, 2));
+      } catch (error) {
+        if (error.code === 'OPPORTUNITY_NOT_FOUND' || error.code === 'OPPORTUNITY_DISCARDED') {
+          const responseStatus = error.code === 'OPPORTUNITY_NOT_FOUND' ? 404 : 409;
+          res.writeHead(responseStatus, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ status: 'error', message: error.message }));
+        } else {
+          sendNadiaApiError(res, 'task creation', error);
+        }
+      }
+      return;
+    }
+
     // Interactive Agent Chat & Interrogation API
     if (reqPath === '/api/agent/chat' && req.method === 'POST') {
       let body;
@@ -348,7 +437,7 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       const agentId = body.agentId;
-      const message = (body.message || '').trim();
+      const message = typeof body.message === 'string' ? body.message.trim() : '';
       const history = body.history || [];
 
       if (!agentId || !message) {
@@ -357,7 +446,9 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      const chatResult = processAgentChat(agentId, message, history);
+      const chatResult = agentId === 'radar-x'
+        ? await nadiaAgent.answer(message)
+        : processAgentChat(agentId, message, history);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(chatResult, null, 2));
       return;
@@ -379,13 +470,20 @@ const server = http.createServer(async (req, res) => {
 
     // Raw Google Ads Search Terms & Negative Vault API
     if (reqPath === '/api/search-terms') {
+      const fetchedAt = new Date().toISOString();
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({
         status: 'success',
+        source: 'google_ads_search_terms_manual',
+        dataStatus: 'MANUAL',
+        fetchedAt,
         totalSearchTerms: SEARCH_TERMS_VAULT_DATA.length,
         buyerCount: SEARCH_TERMS_VAULT_DATA.filter(s => s.category === 'buyer' || s.category === 'location').length,
         blockedNegativeCount: SEARCH_TERMS_VAULT_DATA.filter(s => s.category === 'negative').length,
-        terms: SEARCH_TERMS_VAULT_DATA
+        terms: SEARCH_TERMS_VAULT_DATA.map(term => ({
+          ...term,
+          provenance: { source: 'google_ads_search_terms_manual', status: 'MANUAL', fetchedAt }
+        }))
       }, null, 2));
       return;
     }

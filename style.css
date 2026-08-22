@@ -1304,6 +1304,55 @@ canvas {
   gap: 12px;
 }
 
+.nadia-intelligence-panel {
+  border: 1px solid rgba(255, 230, 0, 0.45);
+  background: rgba(255, 230, 0, 0.04);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.nadia-intelligence-panel.hidden { display: none; }
+
+.nadia-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.nadia-panel-header h4 { margin: 4px 0 0; color: #ffe600; }
+
+.nadia-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.nadia-status-grid > div,
+.nadia-source-block,
+.nadia-opportunity-block {
+  border: 1px solid rgba(132, 146, 166, 0.3);
+  background: rgba(6, 10, 18, 0.75);
+  padding: 9px;
+}
+
+.nadia-status-grid span,
+.nadia-source-block > span,
+.nadia-opportunity-block > span {
+  display: block;
+  color: #8492a6;
+  font-size: 9px;
+  margin-bottom: 5px;
+}
+
+.nadia-status-grid strong { color: #f8fafc; font-size: 11px; }
+.nadia-source-block { margin-bottom: 8px; }
+.nadia-source-list, .nadia-opportunity-list { display: grid; gap: 5px; font: 10px/1.45 'JetBrains Mono', monospace; }
+.nadia-source-row, .nadia-opportunity-row { display: flex; justify-content: space-between; gap: 10px; }
+.nadia-source-status { color: #ffe600; }
+
 .chat-terminal {
   background: #060911;
   border: 1px solid var(--border-color);
@@ -1449,5 +1498,4 @@ canvas {
   border-color: var(--accent-cyan);
   box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
 }
-
 

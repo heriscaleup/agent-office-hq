@@ -150,8 +150,8 @@ export const KEYWORD_TARGETS = [
   }
 ];
 
-// Raw Real Google Ads Search Terms Intelligence & Negative Defense Vault
-// (Google Ads reporting — out of scope for the GSC live-data work; still static.)
+// Legacy manually maintained Google Ads Search Terms Intelligence vault.
+// This is never LIVE data; Nadia exposes it with MANUAL provenance.
 export const SEARCH_TERMS_VAULT_DATA = [
   // 1. High Intent Buyer Search Terms (Converted to Organic Silos)
   {
@@ -469,6 +469,8 @@ export async function refreshSerpData() {
         clicks: 0,
         impressions: 0,
         ctr: 0,
+        rankingPages: [],
+        dateRange: null,
         previousPosition: null,
         error: e.message,
         checkedAt: new Date().toISOString()
@@ -526,6 +528,14 @@ export function getKeywordsData() {
       clicks: live ? live.clicks : null,
       impressions: live ? live.impressions : null,
       ctr: live ? live.ctr : null,
+      rankingUrls: live?.rankingPages || (live?.page ? [{
+        url: live.page,
+        clicks: live.clicks || 0,
+        impressions: live.impressions || 0,
+        ctr: live.ctr || 0,
+        position: live.position
+      }] : []),
+      dateRange: live?.dateRange || null,
       lastChecked: live ? live.checkedAt : null,
       dataError: live ? live.error : null,
       position: describePosition(live),
@@ -545,7 +555,9 @@ export function getAuditSummary() {
   const noData = total - withData.length;
 
   return {
-    dataSource: isGscConfigured() ? 'Google Search Console API (live)' : 'GSC_NOT_CONFIGURED',
+    dataSource: cache.lastAuditTimestamp ? 'google_search_console' : 'GSC_NOT_AVAILABLE',
+    dataStatus: cache.lastAuditTimestamp ? 'CACHED' : 'UNAVAILABLE',
+    fetchedAt: cache.lastAuditTimestamp,
     configured: isGscConfigured(),
     totalKeywords: total,
     page1Count: page1,
@@ -556,6 +568,30 @@ export function getAuditSummary() {
       ? new Date(cache.lastAuditTimestamp).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB'
       : 'Belum pernah di-audit'
   };
+}
+
+export function getGscCacheSnapshot() {
+  const queries = {};
+  for (const target of KEYWORD_TARGETS) {
+    const live = cache.results?.[target.id];
+    if (!live || live.error) continue;
+    queries[target.keyword.toLowerCase()] = {
+      clicks: live.clicks || 0,
+      impressions: live.impressions || 0,
+      ctr: live.impressions ? (live.clicks || 0) / live.impressions : null,
+      position: live.position ?? null,
+      rankingUrls: live.rankingPages || (live.page ? [{
+        url: live.page,
+        clicks: live.clicks || 0,
+        impressions: live.impressions || 0,
+        ctr: live.impressions ? (live.clicks || 0) / live.impressions : 0,
+        position: live.position
+      }] : []),
+      dateRange: live.dateRange || null,
+      checkedAt: live.checkedAt || cache.lastAuditTimestamp
+    };
+  }
+  return { lastAuditTimestamp: cache.lastAuditTimestamp, queries };
 }
 
 export { isGscConfigured };

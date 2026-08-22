@@ -277,7 +277,7 @@
             <div>
               <h3>🎯 GOOGLE ADS SEARCH TERMS & NEGATIVE KEYWORD SHIELD VAULT</h3>
               <span class="panel-subtitle" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">
-                Data riil query pencarian Google Ads, konversi lead WA, & pembasmian 1.909 keyword boncos
+                Legacy manual Google Ads search-term dataset. Source status: MANUAL until a live provider is configured.
               </span>
             </div>
             <div class="searchterms-filters" style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -374,6 +374,30 @@
 
         <!-- Tab 2: Profile & Execution Log -->
         <div id="modal-section-profile" class="modal-body hidden">
+          <section id="nadia-intelligence-panel" class="nadia-intelligence-panel hidden" aria-live="polite">
+            <div class="nadia-panel-header">
+              <div>
+                <span class="modal-role">NADIA V1 / EVIDENCE MODE</span>
+                <h4>SEO INTELLIGENCE STATUS</h4>
+              </div>
+              <button id="btn-nadia-analyze" type="button" class="btn-pixel-small" onclick="runNadiaAnalysis()">RUN ANALYSIS</button>
+            </div>
+            <div class="nadia-status-grid">
+              <div><span>CURRENT STATUS</span><strong id="nadia-current-status">LOADING</strong></div>
+              <div><span>LAST ANALYSIS</span><strong id="nadia-last-analysis">UNAVAILABLE</strong></div>
+              <div><span>OPPORTUNITIES</span><strong id="nadia-opportunity-count">UNAVAILABLE</strong></div>
+              <div><span>HIGH PRIORITY</span><strong id="nadia-high-priority-count">UNAVAILABLE</strong></div>
+              <div><span>TASKS PROPOSED</span><strong id="nadia-task-count">UNAVAILABLE</strong></div>
+            </div>
+            <div class="nadia-source-block">
+              <span>DATA SOURCES</span>
+              <div id="nadia-source-list" class="nadia-source-list">UNAVAILABLE</div>
+            </div>
+            <div class="nadia-opportunity-block">
+              <span>TOP OPPORTUNITIES</span>
+              <div id="nadia-opportunity-list" class="nadia-opportunity-list">No persisted analysis.</div>
+            </div>
+          </section>
           <div class="modal-field">
             <label>CORE ENGINE:</label>
             <span id="modal-engine" class="text-cyan">Claude 3.5 Sonnet + Astro Engine</span>
@@ -453,4 +477,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
