@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "provider": {
+    "source": "google_ads_via_omnirank",
+    "status": "LIVE",
+    "health": "READY",
+    "gateway": "omnirank",
+    "upstream": "google_ads",
+    "apiVersion": "v25",
+    "fetchedAt": "2026-08-23T06:00:00.000Z",
+    "currencyCode": "IDR",
+    "subSources": { "searchCampaigns": "LIVE", "performanceMax": "LIVE" },
+    "requestIds": { "metadata": "request-metadata", "searchCampaigns": "request-search", "performanceMax": "request-pmax" }
+  },
+  "dateRange": { "startDate": "2026-08-17", "endDate": "2026-08-23" },
+  "rowsReceived": 1,
+  "rowsReturned": 1,
+  "truncated": false,
+  "warnings": [],
+  "data": [
+    {
+      "searchTerm": "jasa laser cutting stainless tangerang",
+      "customerId": "1234567890",
+      "campaignId": "123",
+      "campaign": "Laser Cutting Search",
+      "adGroupId": "456",
+      "adGroup": "Stainless",
+      "campaignType": "SEARCH",
+      "searchTermStatus": "ADDED",
+      "matchSource": "ADVERTISER_PROVIDED_KEYWORD",
+      "impressions": 420,
+      "clicks": 38,
+      "cost": 930000,
+      "avgCpc": 24473,
+      "ctr": 0.090476,
+      "conversions": 0,
+      "conversionValue": 0,
+      "conversionRate": 0,
+      "currencyCode": "IDR",
+      "dateRange": { "startDate": "2026-08-17", "endDate": "2026-08-23" },
+      "source": "google_ads_via_omnirank",
+      "status": "LIVE",
+      "gateway": "omnirank",
+      "upstream": "google_ads",
+      "fetchedAt": "2026-08-23T06:00:00.000Z"
+    }
+  ]
+}

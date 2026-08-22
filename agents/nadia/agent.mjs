@@ -14,7 +14,7 @@ import { buildSeoTask } from './task_builder.mjs';
 export const NADIA_IDENTITY = Object.freeze({
   id: 'radar-x',
   name: 'Nadia',
-  version: '1.0.0',
+  version: '1.1.0',
   role: 'SEO Intelligence Agent',
   goal: 'Convert paid-inefficient but relevant demand into evidence-backed organic opportunities and proposed SEO tasks.',
   mode: 'DETERMINISTIC_RULE_ENGINE',
@@ -36,11 +36,13 @@ export class NadiaAgent {
   constructor({
     persistence = new NadiaPersistence(),
     legacySearchTerms = SEARCH_TERMS_VAULT_DATA,
-    gscProviderFactory = null
+    gscProviderFactory = null,
+    googleAdsProvider = new GoogleAdsProvider()
   } = {}) {
     this.persistence = persistence;
     this.legacySearchTerms = legacySearchTerms;
     this.gscProviderFactory = gscProviderFactory;
+    this.googleAdsProvider = googleAdsProvider;
     this.serpProvider = new SerpProvider();
     this.llmProvider = new LLMProvider();
   }
@@ -48,7 +50,7 @@ export class NadiaAgent {
   createGoogleAdsSource(manualSearchTerms) {
     const manualRecords = Array.isArray(manualSearchTerms) ? manualSearchTerms : this.legacySearchTerms;
     return new GoogleAdsSource({
-      liveProvider: new GoogleAdsProvider(),
+      liveProvider: this.googleAdsProvider,
       manualProvider: new ManualGoogleAdsProvider(manualRecords)
     });
   }
@@ -99,7 +101,13 @@ export class NadiaAgent {
     const llmStatus = await this.llmProvider.explain();
     const gscSummary = gscProvider.sourceSummary();
     const sources = [
-      sourceRecord(adsResult?.source || 'google_ads', adsResult?.status || DATA_STATUSES.UNAVAILABLE, adsResult?.fetchedAt || finishedAt, { error: adsResult?.error || null }),
+      sourceRecord(adsResult?.source || 'google_ads_via_omnirank', adsResult?.status || DATA_STATUSES.UNAVAILABLE, adsResult?.fetchedAt || finishedAt, {
+        error: adsResult?.error || null,
+        provider: adsResult?.provider || null,
+        fallbackFrom: adsResult?.fallbackFrom || null,
+        rowsLoaded: adsResult?.items?.length || 0,
+        dateRange: adsResult?.dateRange || null
+      }),
       sourceRecord(gscSummary.source, gscSummary.status, gscSummary.fetchedAt || finishedAt, {
         requestStats: gscProvider.getStats()
       }),
@@ -170,7 +178,9 @@ export class NadiaAgent {
       currentStatus,
       lastAnalysis: lastRun?.finishedAt || null,
       dataSources: lastRun?.sources || [
-        sourceRecord('google_ads', DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
+        sourceRecord('google_ads_via_omnirank', DATA_STATUSES.UNAVAILABLE, new Date().toISOString(), {
+          provider: this.googleAdsProvider.getStatus()
+        }),
         sourceRecord('google_ads_search_terms_manual', this.legacySearchTerms.length ? DATA_STATUSES.MANUAL : DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
         sourceRecord('google_search_console', gscSummary.status, gscSummary.fetchedAt || new Date().toISOString()),
         sourceRecord('serp_provider', DATA_STATUSES.UNAVAILABLE, new Date().toISOString()),
@@ -183,6 +193,10 @@ export class NadiaAgent {
     };
   }
 
+  async getGoogleAdsStatus() {
+    return this.googleAdsProvider.getStatus();
+  }
+
   async answer(message) {
     const status = await this.getStatus();
     const opportunities = await this.getOpportunities({ limit: 5 });
@@ -190,7 +204,7 @@ export class NadiaAgent {
     let reply;
 
     if (!status.lastAnalysis) {
-      reply = 'Belum ada analysis run tersimpan. Jalankan Nadia Analyze agar saya dapat menjawab dari evidence. Google Ads live tetap UNAVAILABLE; legacy search terms akan diberi label MANUAL.';
+      reply = 'Belum ada analysis run tersimpan. Jalankan Nadia Analyze agar saya dapat menjawab dari evidence. Google Ads via OmniRank akan dicoba terlebih dahulu; fallback legacy selalu diberi label MANUAL.';
     } else if (lower.includes('source') || lower.includes('sumber') || lower.includes('data')) {
       reply = status.dataSources.map(item => `${item.source}: ${item.status} (${item.fetchedAt})`).join('\n');
     } else {

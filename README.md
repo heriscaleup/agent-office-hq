@@ -46,10 +46,27 @@ Authenticated endpoints:
 - `GET /api/agents/nadia/opportunities?classification=&minScore=&limit=`
 - `POST /api/agents/nadia/analyze`
 - `POST /api/agents/nadia/tasks` with `{ "opportunityId": "..." }`
+- `GET /api/agents/nadia/google-ads/status`
 
 Data status is explicit: `LIVE`, `CACHED`, `MANUAL`, `DERIVED`, `SIMULATED`, `UNAVAILABLE`. The current legacy `SEARCH_TERMS_VAULT_DATA` fallback is always labelled `MANUAL`; it is never presented as live Google Ads API data. GSC is labelled `LIVE` only after a successful outbound API request, `CACHED` when matching disk-cache evidence is used, and `UNAVAILABLE` when neither is available. Competitor SERP and LLM providers remain `UNAVAILABLE` until configured. Deterministic intent, relevance, score, classification, recommendation, existing-page state, and cannibalization outputs carry a `nadia_rule_engine_v1` evidence record labelled `DERIVED`; derived calculations are never labelled live.
 
 Persistence uses atomic JSON replacement under `data/nadia/` for opportunities, proposed SEO tasks, and analysis audit records. Nadia v1 has no publish, deploy, Google Ads mutation, content deletion, or PR merge capability.
+
+## Nadia Google Ads via OmniRank
+
+Nadia v1.1 never receives Google OAuth credentials. OmniRank owns Google Ads OAuth and exposes only normalized read-only Search Terms data. AI HQ needs:
+
+```text
+OMNIRANK_BASE_URL=https://<your-omnirank-host>
+OMNIRANK_AGENT_SHARED_SECRET=<set as a secret in both deployments>
+NADIA_GOOGLE_ADS_CUSTOMER_ID=<optional accessible customer ID>
+NADIA_GOOGLE_ADS_LOOKBACK_DAYS=90
+NADIA_MAX_GOOGLE_ADS_ROWS=10000
+```
+
+`OMNIRANK_AGENT_SHARED_SECRET` is server-only and must never enter frontend code or persistence. Google Ads OAuth client ID, client secret, refresh token, developer token, and manager login ID remain exclusively in OmniRank. Nadia may send an optional target customer ID, which OmniRank validates against its accessible manager hierarchy. A successful gateway fetch is labelled `google_ads_via_omnirank / LIVE`; gateway failure falls back to the legacy vault as `MANUAL`. The contract fixture is `contracts/omnirank-google-ads-search-terms-v1.fixture.json`.
+
+Cost-pressure calibration is IDR-oriented. When the upstream account currency is not IDR, Nadia preserves the metrics but sets cost scoring incompatible and awards zero cost-pressure points rather than applying misleading IDR thresholds.
 
 Opportunity score weights total 100 points: business relevance 25, buyer intent 20, paid traffic evidence 15, paid cost/CPC pressure 10, GSC search demand 10, organic ranking opportunity 10, and conversion evidence 10. Calibration reaches maximum evidence at 20 paid clicks, Rp25,000 average CPC or Rp1,000,000 cost, 1,000 GSC impressions, and 3 conversions. These references live in `SCORING_CALIBRATION`, while each opportunity exposes numeric `scoreComponents` for compatibility and machine-readable `scoreExplanation` records with points, maximums, inputs, and calibration references. Conversion is evidence, not a mandatory gate. Irrelevant intent or business relevance at/below 20 is hard-capped into `DISCARD`. Buckets are `HIGH_PRIORITY` 85+, `SEO_EXPERIMENT` 70+, `SUPPORTING_CONTENT` 50+, `MONITOR` 30+, and `DISCARD` below 30.
 

@@ -74,6 +74,8 @@ function buildEvidence(cluster, ads, gsc, derivedAnalysis) {
     query: item.searchTerm,
     source: item.source,
     status: item.status,
+    gateway: item.gateway || null,
+    upstream: item.upstream || null,
     fetchedAt: item.fetchedAt,
     metrics: {
       clicks: item.clicks,
@@ -113,6 +115,9 @@ export function buildOpportunity(cluster, gscMetrics) {
   const cost = sum(items, 'cost');
   const conversions = sum(items, 'conversions');
   const conversionValue = sum(items, 'conversionValue');
+  const currencyCodes = [...new Set(items.map(item => item.currencyCode).filter(Boolean))];
+  const costScoringCompatible = items.length > 0 && items.every(item => item.costScoringCompatible !== false)
+    && currencyCodes.length <= 1 && (currencyCodes[0] || 'IDR') === 'IDR';
   const ads = {
     clicks,
     impressions,
@@ -122,8 +127,11 @@ export function buildOpportunity(cluster, gscMetrics) {
     conversionValue,
     ctr: impressions ? clicks / impressions : null,
     conversionRate: clicks ? conversions / clicks : null,
+    currencyCode: currencyCodes.length === 1 ? currencyCodes[0] : null,
+    costScoringCompatible,
     campaigns: [...new Set(items.map(item => item.campaign).filter(Boolean))],
     adGroups: [...new Set(items.map(item => item.adGroup).filter(Boolean))],
+    campaignTypes: [...new Set(items.map(item => item.campaignType).filter(Boolean))],
     dateRange: items.find(item => item.dateRange)?.dateRange || null,
     source: items[0]?.source || 'google_ads',
     status: items[0]?.status || 'UNAVAILABLE',

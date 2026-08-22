@@ -38,10 +38,13 @@ export function classifyOpportunity(score, { intent, businessRelevance } = {}) {
 export function calculateOpportunityScore({ intent, businessRelevance, ads = {}, gsc = {} }) {
   const intentPoints = INTENT_POINTS[intent] || 0;
   const ranking = rankingOpportunity(gsc.position);
-  const costPressureFactor = Math.max(
-    clamp((ads.avgCpc || 0) / SCORING_CALIBRATION.cpcForMaxCostPressure),
-    clamp((ads.cost || 0) / SCORING_CALIBRATION.costForMaxPressure)
-  );
+  const costScoringCompatible = ads.costScoringCompatible !== false;
+  const costPressureFactor = costScoringCompatible
+    ? Math.max(
+      clamp((ads.avgCpc || 0) / SCORING_CALIBRATION.cpcForMaxCostPressure),
+      clamp((ads.cost || 0) / SCORING_CALIBRATION.costForMaxPressure)
+    )
+    : 0;
   const rawComponents = {
     businessRelevance: clamp(businessRelevance / SCORING_CALIBRATION.businessRelevanceForMaxPoints) * SCORING_WEIGHTS.businessRelevance,
     buyerIntent: intentPoints / SCORING_CALIBRATION.buyerIntentPointsForMax * SCORING_WEIGHTS.buyerIntent,
@@ -69,11 +72,14 @@ export function calculateOpportunityScore({ intent, businessRelevance, ads = {},
     }),
     paidCostPressure: explainComponent(rawComponents.paidCostPressure, SCORING_WEIGHTS.paidCostPressure, {
       avgCpc: ads.avgCpc || 0,
-      cost: ads.cost || 0
+      cost: ads.cost || 0,
+      currencyCode: ads.currencyCode || null,
+      costScoringCompatible
     }, {
       cpcForMaxPoints: SCORING_CALIBRATION.cpcForMaxCostPressure,
       costForMaxPoints: SCORING_CALIBRATION.costForMaxPressure,
-      method: 'MAX_OF_CPC_OR_TOTAL_COST_PRESSURE'
+      method: 'MAX_OF_CPC_OR_TOTAL_COST_PRESSURE',
+      compatibleCurrency: 'IDR'
     }),
     searchDemand: explainComponent(rawComponents.searchDemand, SCORING_WEIGHTS.searchDemand, { impressions: gsc.impressions || 0 }, {
       impressionsForMaxPoints: SCORING_CALIBRATION.impressionsForMaxDemand
