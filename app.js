@@ -290,10 +290,14 @@ function renderNadiaSources(sources = []) {
     const row = document.createElement('div');
     row.className = 'nadia-source-row';
     const name = document.createElement('span');
-    name.textContent = source.source;
+    name.textContent = source.source === 'google_ads_via_omnirank'
+      ? 'GOOGLE ADS'
+      : source.source === 'google_ads_search_terms_manual' ? 'GOOGLE ADS SEARCH TERMS' : source.source;
     const status = document.createElement('strong');
     status.className = 'nadia-source-status';
-    status.textContent = source.status;
+    status.textContent = source.source === 'google_ads_via_omnirank' && source.status === 'LIVE'
+      ? 'LIVE via OMNIRANK'
+      : source.status;
     row.append(name, status);
     container.appendChild(row);
   }
